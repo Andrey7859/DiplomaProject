@@ -1,0 +1,7 @@
+/bin
+/doc
+/examples
+/tools
+/source
+.DS_Store
+/.vscode
