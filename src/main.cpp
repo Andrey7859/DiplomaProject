@@ -2,7 +2,11 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <GL/glut.h>
+#include <string>
+#include <iostream>
+#include <dirent.h>
 
+using namespace std;
 
 using namespace irr;
 
@@ -14,6 +18,8 @@ using namespace gui;
 
 #define BUTTON_SIZE 32
 #define OFFSET ((Height / 10) - (BUTTON_SIZE * 2)) / 2
+
+#define BUFSIZE 255
 
 int Width;
 int Height;
@@ -266,12 +272,32 @@ void createExplorer(IrrlichtDevice *device)
 
 }
 
+int scaner( char ( *filesList )[BUFSIZE]){
+	DIR *dir;
+	struct dirent *ent;
+	int filesListSize = 0;
+
+	if ((dir = opendir (".")) != NULL) {
+		while ((ent = readdir (dir)) != NULL) {
+			strcpy(filesList[filesListSize], ent->d_name);
+			filesListSize++;
+		}
+
+		closedir (dir);
+	} 
+
+	return filesListSize;
+}
+
 int main(int argc,char **argv){
-	/*
-	1. deviceType рендер с помощью которого будет отрисовывать можно заменить на:
-	EDT_BURNINGSVIDEO, EDT_NULL, EDT_DIRECT3D8, EDT_DIRECT3D9 или EDT_OPENGL.
-	
-	*/
+	char filesList[BUFSIZE][BUFSIZE];
+
+	int size = scaner(filesList);
+
+	for(int i = 0; i < size; i++){
+		cout << filesList[i] << endl;
+	}
+
 	glutInit(&argc,argv);
 	Width = glutGet(GLUT_SCREEN_WIDTH);
     Height = glutGet(GLUT_SCREEN_HEIGHT);
