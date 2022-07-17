@@ -272,6 +272,76 @@ void createExplorer(IrrlichtDevice *device)
 
 }
 
+IrrlichtDevice *device;
+
+/*
+	Adds a SceneNode with an icon to the Scene Tree
+*/
+void addSceneTreeItem( ISceneNode * parent, IGUITreeViewNode* nodeParent, ISceneManager* smgr)
+{
+	IGUITreeViewNode* node;
+	wchar_t msg[128];
+
+	s32 imageIndex;
+	list<ISceneNode*>::ConstIterator it = parent->getChildren().begin();
+	for (; it != parent->getChildren().end(); ++it)
+	{
+		switch ( (*it)->getType () )
+		{
+			case ESNT_Q3SHADER_SCENE_NODE: imageIndex = 0; break;
+			case ESNT_CAMERA: imageIndex = 1; break;
+			case ESNT_EMPTY: imageIndex = 2; break;
+			case ESNT_MESH: imageIndex = 3; break;
+			case ESNT_OCTREE: imageIndex = 3; break;
+			case ESNT_ANIMATED_MESH: imageIndex = 4; break;
+			case ESNT_SKY_BOX: imageIndex = 5; break;
+			case ESNT_BILLBOARD: imageIndex = 6; break;
+			case ESNT_PARTICLE_SYSTEM: imageIndex = 7; break;
+			case ESNT_TEXT: imageIndex = 8; break;
+			default:imageIndex = -1; break;
+		}
+
+		if ( imageIndex < 0 )
+		{
+			swprintf ( msg, 128, L"%hs,%hs", device->getSceneManager()->getSceneNodeTypeName ( (*it)->getType () ),(*it)->getName());
+			cout << "qwe" << endl;
+		}
+		else
+		{
+			swprintf ( msg, 128, L"%hs",(*it)->getName() );
+			printf("\n\tname: %s\n", (*it)->getName());
+		}
+
+		node = nodeParent->addChildBack( msg, 0, imageIndex );
+
+		// Add all Animators
+		list<ISceneNodeAnimator*>::ConstIterator ait = (*it)->getAnimators().begin();
+		for (; ait != (*it)->getAnimators().end(); ++ait)
+		{
+			imageIndex = -1;
+			swprintf ( msg, 128, L"%hs", device->getSceneManager()->getAnimatorTypeName ( (*ait)->getType () ));
+
+			switch ( (*ait)->getType() )
+			{
+				case ESNAT_FLY_CIRCLE:
+				case ESNAT_FLY_STRAIGHT:
+				case ESNAT_FOLLOW_SPLINE:
+				case ESNAT_ROTATION:
+				case ESNAT_TEXTURE:
+				case ESNAT_DELETION:
+				case ESNAT_COLLISION_RESPONSE:
+				case ESNAT_CAMERA_FPS:
+				case ESNAT_CAMERA_MAYA:
+				default:
+					break;
+			}
+			node->addChildBack( msg, 0, imageIndex );
+		}
+
+		addSceneTreeItem ( *it, node, smgr );
+	}
+}
+
 int scaner( char ( *filesList )[BUFSIZE]){
 	DIR *dir;
 	struct dirent *ent;
@@ -302,9 +372,7 @@ int main(int argc,char **argv){
 	Width = glutGet(GLUT_SCREEN_WIDTH);
     Height = glutGet(GLUT_SCREEN_HEIGHT);
 
-	IrrlichtDevice *device =
-		createDevice(video::EDT_SOFTWARE, dimension2d<u32>(Width, Height), 16,
-			true, false, false, 0);
+	device = createDevice(video::EDT_SOFTWARE, dimension2d<u32>(Width, Height), 16, true, false, false, 0);
 
 	if (!device)
 		return 1;
@@ -319,18 +387,18 @@ int main(int argc,char **argv){
 	Создаем указатели на VideoDriver, SceneManager и  GUI
 	*/
 	IVideoDriver* driver = device->getVideoDriver();
-	ISceneManager* smgr = device->getSceneManager();
-	IGUIEnvironment* guienv = device->getGUIEnvironment();
+	ISceneManager* smgr = device->getSceneManager(); // создает объекты управляет перемещает менеджер делает управление
+	IGUIEnvironment* guienv = device->getGUIEnvironment(); //Окружение панели упраления
 
 
 
 
 	IGUISkin* skin = guienv->getSkin();
-	IGUIFont* font = guienv->getFont("media/fonthaettenschweiler.bmp");
+	IGUIFont* font = guienv->getFont("media/fontlucida.png");
 	if (font)
 		skin->setFont(font);
-
-	skin->setFont(guienv->getBuiltInFont(), EGDF_TOOLTIP);
+	else
+		skin->setFont(guienv->getBuiltInFont(), EGDF_TOOLTIP);
 
 	// create menu
 	gui::IGUIContextMenu* menu = guienv->addMenu();
@@ -400,6 +468,24 @@ int main(int argc,char **argv){
 	createButtonsField(device, driver);
 	createToolBox(device);
 	createExplorer(device);
+	
+	  // create a visible Scene Tree
+	IGUITreeView* SceneTree;
+
+    guienv->addStaticText ( L"Scenegraph:", rect<s32>( Width / 2, 400, Width , 700),false, false, 0, -1, false );
+    SceneTree = guienv->addTreeView(   rect<s32>( Width / 2, 450, Width, 600 ), 0, -1, true, true, false );
+    SceneTree->setToolTipText ( L"Show the current Scenegraph" );
+    SceneTree->getRoot()->clearChildren();
+    addSceneTreeItem (smgr->getRootSceneNode(), SceneTree->getRoot(), smgr);
+
+
+    IGUIImageList* imageList = guienv->createImageList(driver->getTexture ( "media/iconlist.png" ), dimension2di( 32, 32 ), true );
+
+    if ( imageList )
+    {
+        SceneTree->setImageList( imageList );
+        imageList->drop ();
+    }
 
 	while(device->run()){
 		// if (device->isWindowActive()) {
