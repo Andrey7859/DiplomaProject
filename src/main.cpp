@@ -6,6 +6,7 @@
 #include <iostream>
 #include <dirent.h>
 
+
 using namespace std;
 
 using namespace irr;
@@ -247,37 +248,7 @@ void createToolBox(IrrlichtDevice *device)
 
 }
 
-void createExplorer(IrrlichtDevice *device)
-{
-    // remove tool box if already there
-    IGUIEnvironment* env = device->getGUIEnvironment();
-    IGUIElement* root = env->getRootGUIElement();
-    IGUIElement* e = root->getElementFromId(GUI_ID_DIALOG_ROOT_3_WINDOW, true);
-    
-	if (e)
-        e->remove();
-
-    // create the toolbox window			 от края     отступ с верху   ширина    длина вниз
-    IGUIWindow* wnd = env->addWindow(rect<s32>(0, PROPERTIES_WINDOW_POS_H, 300, PROPERTIES_WINDOW_POS_H * 2), false, L"Explorer", 0, GUI_ID_DIALOG_ROOT_3_WINDOW);
-
-
-    // create tab control and tabs
-    // IGUITabControl* tab = env->addTabControl(
-    //     rect<s32>(2,20,800-602,480-7), wnd, true, true);
-
-    // IGUITab* t1 = tab->addTab(L"Config");
-
-
-    //updateScaleInfo(Model);
-
-}
-
-IrrlichtDevice *device;
-
-/*
-	Adds a SceneNode with an icon to the Scene Tree
-*/
-void addSceneTreeItem( ISceneNode * parent, IGUITreeViewNode* nodeParent, ISceneManager* smgr)
+void addSceneTreeItem( ISceneNode * parent, IGUITreeViewNode* nodeParent, IrrlichtDevice *device)
 {
 	IGUITreeViewNode* node;
 	wchar_t msg[128];
@@ -338,9 +309,62 @@ void addSceneTreeItem( ISceneNode * parent, IGUITreeViewNode* nodeParent, IScene
 			node->addChildBack( msg, 0, imageIndex );
 		}
 
-		addSceneTreeItem ( *it, node, smgr );
+		addSceneTreeItem ( *it, node, device);
 	}
 }
+
+void addSceneTree(IGUITab* t1, IrrlichtDevice *device){	
+	  // create a visible Scene Tree
+	IGUITreeView* SceneTree;
+
+    SceneTree = device->getGUIEnvironment()->addTreeView(rect<s32>( 0, OFFSET, 300, PROPERTIES_WINDOW_POS_H ), t1, -1, true, true, false );
+    SceneTree->setToolTipText ( L"Show the current Scenegraph" );
+    SceneTree->getRoot()->clearChildren();
+    addSceneTreeItem (device->getSceneManager()->getRootSceneNode(), SceneTree->getRoot(), device);
+
+	IGUIImageList* imageList = device->getGUIEnvironment()->createImageList(device->getVideoDriver()->getTexture ( "media/iconlist.png" ), dimension2di( 32, 32 ), true );
+
+    if ( imageList ){
+        SceneTree->setImageList( imageList );
+        imageList->drop ();
+    }
+
+}
+
+void createExplorer(IrrlichtDevice *device)
+{
+    // remove tool box if already there
+    IGUIEnvironment* env = device->getGUIEnvironment();
+    IGUIElement* root = env->getRootGUIElement();
+    IGUIElement* e = root->getElementFromId(GUI_ID_DIALOG_ROOT_3_WINDOW, true);
+    
+	if (e)
+        e->remove();
+
+    // create the toolbox window			 от края     отступ с верху   ширина    длина вниз
+    IGUIWindow* wnd = env->addWindow(rect<s32>(0, PROPERTIES_WINDOW_POS_H, 300, PROPERTIES_WINDOW_POS_H * 2), false, L"Explorer", 0, GUI_ID_DIALOG_ROOT_3_WINDOW);
+
+
+    //create tab control and tabs
+    IGUITabControl* tab = env->addTabControl(
+        rect<s32>(0, OFFSET, 300, PROPERTIES_WINDOW_POS_H ), wnd, true, true);
+
+    IGUITab* t1 = tab->addTab(L"Scene explorer");
+	addSceneTree(t1, device);
+
+    IGUITab* t2 = tab->addTab(L"Content browser");
+
+
+    //updateScaleInfo(Model);
+
+}
+
+IrrlichtDevice *device;
+
+/*
+	Adds a SceneNode with an icon to the Scene Tree
+*/
+
 
 int scaner( char ( *filesList )[BUFSIZE]){
 	DIR *dir;
@@ -469,24 +493,9 @@ int main(int argc,char **argv){
 	createToolBox(device);
 	createExplorer(device);
 	
-	  // create a visible Scene Tree
-	IGUITreeView* SceneTree;
-
-    guienv->addStaticText ( L"Scenegraph:", rect<s32>( Width / 2, 400, Width , 700),false, false, 0, -1, false );
-    SceneTree = guienv->addTreeView(   rect<s32>( Width / 2, 450, Width, 600 ), 0, -1, true, true, false );
-    SceneTree->setToolTipText ( L"Show the current Scenegraph" );
-    SceneTree->getRoot()->clearChildren();
-    addSceneTreeItem (smgr->getRootSceneNode(), SceneTree->getRoot(), smgr);
 
 
-    IGUIImageList* imageList = guienv->createImageList(driver->getTexture ( "media/iconlist.png" ), dimension2di( 32, 32 ), true );
-
-    if ( imageList )
-    {
-        SceneTree->setImageList( imageList );
-        imageList->drop ();
-    }
-
+  
 	while(device->run()){
 		// if (device->isWindowActive()) {
 		driver->beginScene(true, true, SColor(255,100,101,140));
