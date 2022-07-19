@@ -116,7 +116,6 @@ enum
 #define PROPERTIES_WINDOW_POS_H EXPLORER_WINDOW_POS_Y + EXPLORER_WINDOW_POS_H
 
 class MyEventReceiver : public IEventReceiver
-
 {
 private:
 	SAppContext & Context;
@@ -248,6 +247,24 @@ void createToolBox(IrrlichtDevice *device)
 
 }
 
+int scaner( char ( *filesList )[BUFSIZE]){
+	
+	DIR *dir;
+	struct dirent *ent;
+	int filesListSize = 0;
+
+	if ((dir = opendir (".")) != NULL) {
+		while ((ent = readdir (dir)) != NULL) {
+			strcpy(filesList[filesListSize], ent->d_name);
+			filesListSize++;
+		}
+
+		closedir (dir);
+	} 
+
+	return filesListSize;
+}
+
 void addSceneTreeItem( ISceneNode * parent, IGUITreeViewNode* nodeParent, IrrlichtDevice *device)
 {
 	IGUITreeViewNode* node;
@@ -280,7 +297,7 @@ void addSceneTreeItem( ISceneNode * parent, IGUITreeViewNode* nodeParent, Irrlic
 		else
 		{
 			swprintf ( msg, 128, L"%hs",(*it)->getName() );
-			printf("\n\tname: %s\n", (*it)->getName());
+			// printf("\n\tname: %s\n", (*it)->getName());
 		}
 
 		node = nodeParent->addChildBack( msg, 0, imageIndex );
@@ -313,7 +330,36 @@ void addSceneTreeItem( ISceneNode * parent, IGUITreeViewNode* nodeParent, Irrlic
 	}
 }
 
-void addSceneTree(IGUITab* t1, IrrlichtDevice *device){	
+void addContentBrowserTreeItem(IGUITreeViewNode* nodeParent){
+	wchar_t wc[BUFSIZE];
+	char filesList[BUFSIZE][BUFSIZE];
+	int size = scaner(filesList);
+	IGUITreeViewNode* node[size];
+
+	for(int i = 0; i < size; i++){
+		// cout << filesList[i] << endl;
+		mbstowcs(wc, filesList[i], strlen(filesList[i]) + 1);
+		node[i] = nodeParent->addChildBack(wc, 0);
+	}
+}
+
+void addContentBrowserTree(IGUITab* t2, IrrlichtDevice *device) {
+	IGUITreeView* SceneTree;
+
+    SceneTree = device->getGUIEnvironment()->addTreeView(rect<s32>( 0, OFFSET, 300, PROPERTIES_WINDOW_POS_H ), t2, -1, true, true, false );
+    SceneTree->setToolTipText ( L"Show all files and folders into project" );
+    SceneTree->getRoot()->clearChildren();
+    addContentBrowserTreeItem (SceneTree->getRoot());
+
+	// IGUIImageList* imageList = device->getGUIEnvironment()->createImageList(device->getVideoDriver()->getTexture ( "media/iconlist.png" ), dimension2di( 32, 32 ), true );
+
+    // if ( imageList ){
+    //     SceneTree->setImageList( imageList );
+    //     imageList->drop ();
+    // }
+}
+
+void addSceneExplorerTree(IGUITab* t1, IrrlichtDevice *device){	
 	  // create a visible Scene Tree
 	IGUITreeView* SceneTree;
 
@@ -347,13 +393,13 @@ void createExplorer(IrrlichtDevice *device)
 
     //create tab control and tabs
     IGUITabControl* tab = env->addTabControl(
-        rect<s32>(0, OFFSET, 300, PROPERTIES_WINDOW_POS_H ), wnd, true, true);
+        rect<s32>(0, OFFSET, 300, PROPERTIES_WINDOW_POS_H - (3 * OFFSET)), wnd, true, true);
 
     IGUITab* t1 = tab->addTab(L"Scene explorer");
-	addSceneTree(t1, device);
+	addSceneExplorerTree(t1, device);
 
     IGUITab* t2 = tab->addTab(L"Content browser");
-
+	addContentBrowserTree(t2, device);
 
     //updateScaleInfo(Model);
 
@@ -365,32 +411,8 @@ IrrlichtDevice *device;
 	Adds a SceneNode with an icon to the Scene Tree
 */
 
-
-int scaner( char ( *filesList )[BUFSIZE]){
-	DIR *dir;
-	struct dirent *ent;
-	int filesListSize = 0;
-
-	if ((dir = opendir (".")) != NULL) {
-		while ((ent = readdir (dir)) != NULL) {
-			strcpy(filesList[filesListSize], ent->d_name);
-			filesListSize++;
-		}
-
-		closedir (dir);
-	} 
-
-	return filesListSize;
-}
-
 int main(int argc,char **argv){
-	char filesList[BUFSIZE][BUFSIZE];
 
-	int size = scaner(filesList);
-
-	for(int i = 0; i < size; i++){
-		cout << filesList[i] << endl;
-	}
 
 	glutInit(&argc,argv);
 	Width = glutGet(GLUT_SCREEN_WIDTH);
