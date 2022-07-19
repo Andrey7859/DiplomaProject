@@ -247,15 +247,15 @@ void createToolBox(IrrlichtDevice *device)
 
 }
 
-int scaner( char ( *filesList )[BUFSIZE]){
-	
+int scaner(char filesList[][BUFSIZE][2]){
 	DIR *dir;
 	struct dirent *ent;
 	int filesListSize = 0;
 
 	if ((dir = opendir (".")) != NULL) {
 		while ((ent = readdir (dir)) != NULL) {
-			strcpy(filesList[filesListSize], ent->d_name);
+			
+			strcpy(filesList[filesListSize][0], ent->d_name);
 			filesListSize++;
 		}
 
@@ -332,13 +332,15 @@ void addSceneTreeItem( ISceneNode * parent, IGUITreeViewNode* nodeParent, Irrlic
 
 void addContentBrowserTreeItem(IGUITreeViewNode* nodeParent){
 	wchar_t wc[BUFSIZE];
-	char filesList[BUFSIZE][BUFSIZE];
+	char filesList[BUFSIZE][BUFSIZE][2];
 	int size = scaner(filesList);
 	IGUITreeViewNode* node[size];
 
 	for(int i = 0; i < size; i++){
 		// cout << filesList[i] << endl;
-		mbstowcs(wc, filesList[i], strlen(filesList[i]) + 1);
+		for(int j = 0; j < BUFSIZE; j++){
+			mbstowcs(wc, filesList[i][j][0], strlen(filesList[i][j][0]) + 1);
+		}
 		node[i] = nodeParent->addChildBack(wc, 0);
 	}
 }
