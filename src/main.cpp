@@ -247,15 +247,20 @@ void createToolBox(IrrlichtDevice *device)
 
 }
 
-int scaner(char filesList[][BUFSIZE][2]){
+typedef struct filesListStruct {
+	std::string str;
+	int type;
+} filesList;
+
+int scaner(filesList filesList[BUFSIZE], std::string path){
 	DIR *dir;
 	struct dirent *ent;
 	int filesListSize = 0;
 
-	if ((dir = opendir (".")) != NULL) {
+	if ((dir = opendir (path.c_str())) != NULL) {
 		while ((ent = readdir (dir)) != NULL) {
-			
-			strcpy(filesList[filesListSize][0], ent->d_name);
+			filesList[filesListSize].str.append(ent->d_name);
+			filesList[filesListSize].type = ent->d_type;
 			filesListSize++;
 		}
 
@@ -330,18 +335,26 @@ void addSceneTreeItem( ISceneNode * parent, IGUITreeViewNode* nodeParent, Irrlic
 	}
 }
 
-void addContentBrowserTreeItem(IGUITreeViewNode* nodeParent){
+void addContentBrowserTreeItem(IGUITreeViewNode* nodeParent, std::string path){
 	wchar_t wc[BUFSIZE];
-	char filesList[BUFSIZE][BUFSIZE][2];
-	int size = scaner(filesList);
+	filesList filesList[BUFSIZE];
+	int size = scaner(filesList, path);
 	IGUITreeViewNode* node[size];
 
 	for(int i = 0; i < size; i++){
-		// cout << filesList[i] << endl;
-		for(int j = 0; j < BUFSIZE; j++){
-			mbstowcs(wc, filesList[i][j][0], strlen(filesList[i][j][0]) + 1);
-		}
+		mbstowcs(wc, filesList[i].str.c_str(), size);
 		node[i] = nodeParent->addChildBack(wc, 0);
+
+		cout << filesList[i].str;
+
+		if(filesList[i].type == DT_DIR) 
+			cout << "\tfolder" << endl;
+
+		if(filesList[i].type == DT_REG)
+			cout << "\tfile" << endl;
+
+		if(filesList[i].type == DT_UNKNOWN)
+			cout << "\tunknown" << endl;
 	}
 }
 
@@ -351,7 +364,7 @@ void addContentBrowserTree(IGUITab* t2, IrrlichtDevice *device) {
     SceneTree = device->getGUIEnvironment()->addTreeView(rect<s32>( 0, OFFSET, 300, PROPERTIES_WINDOW_POS_H ), t2, -1, true, true, false );
     SceneTree->setToolTipText ( L"Show all files and folders into project" );
     SceneTree->getRoot()->clearChildren();
-    addContentBrowserTreeItem (SceneTree->getRoot());
+    addContentBrowserTreeItem (SceneTree->getRoot(), ".");
 
 	// IGUIImageList* imageList = device->getGUIEnvironment()->createImageList(device->getVideoDriver()->getTexture ( "media/iconlist.png" ), dimension2di( 32, 32 ), true );
 
