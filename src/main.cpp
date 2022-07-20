@@ -259,6 +259,9 @@ int scaner(filesList filesList[BUFSIZE], std::string path){
 
 	if ((dir = opendir (path.c_str())) != NULL) {
 		while ((ent = readdir (dir)) != NULL) {
+			if(ent->d_name == "." || ent->d_name == "..")
+				continue;
+				
 			filesList[filesListSize].str.append(ent->d_name);
 			filesList[filesListSize].type = ent->d_type;
 			filesListSize++;
@@ -347,8 +350,33 @@ void addContentBrowserTreeItem(IGUITreeViewNode* nodeParent, std::string path){
 
 		cout << filesList[i].str;
 
-		if(filesList[i].type == DT_DIR) 
+		if(filesList[i].type == DT_DIR) {
 			cout << "\tfolder" << endl;
+			
+			struct filesListStruct *filesList_1 = new struct filesListStruct[BUFSIZE];
+			wchar_t wc_1[BUFSIZE];
+			std::string sub_path = path;
+
+			int size_1 = scaner(filesList_1, sub_path.append("/"+filesList[i].str));
+			
+			IGUITreeViewNode* node_1[size_1];
+			mbstowcs(wc_1, filesList_1[i].str.c_str(), size_1);
+			node_1[i] = node[i]->addChildBack(wc_1, 0);
+
+			for (int i = 0; i < size_1; i++) {
+				cout << "    ";
+				cout << filesList_1[i].str;
+				
+				if(filesList[i].type == DT_DIR) 
+					cout << "\tfolder" << endl;
+
+				if(filesList[i].type == DT_REG)
+					cout << "\tfile" << endl;
+
+				if(filesList[i].type == DT_UNKNOWN)
+					cout << "\tunknown" << endl;
+			}
+		}
 
 		if(filesList[i].type == DT_REG)
 			cout << "\tfile" << endl;
