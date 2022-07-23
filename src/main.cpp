@@ -252,6 +252,25 @@ typedef struct filesListStruct {
 	int type;
 } filesList;
 
+int filesCounter(std::string path) {
+	DIR *dir;
+	struct dirent *ent;
+	int filesListSize = 0;
+
+	if ((dir = opendir (path.c_str())) != NULL) {
+		while ((ent = readdir (dir)) != NULL) {
+			if(strcmp(".", ent->d_name) == 0 || strcmp("..", ent->d_name) == 0)
+                continue;
+
+			filesListSize++;
+		}
+
+		closedir (dir);
+	} 
+
+	return filesListSize;
+}
+
 int scaner(filesList filesList[BUFSIZE], std::string path){
 	DIR *dir;
 	struct dirent *ent;
@@ -339,8 +358,10 @@ void addSceneTreeItem( ISceneNode * parent, IGUITreeViewNode* nodeParent, Irrlic
 }
 
 void addContentBrowserTreeItem(IGUITreeViewNode* nodeParent, std::string path){
-	wchar_t wc[BUFSIZE];
-	filesList filesList[BUFSIZE];
+	int counter = filesCounter(path);
+	wchar_t wc[counter];
+	filesList filesList[counter];
+	
 	int size = scaner(filesList, path);
 	IGUITreeViewNode** node = new IGUITreeViewNode*[size];		// !!!
 
