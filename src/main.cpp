@@ -227,24 +227,37 @@ void createToolBox(IrrlichtDevice *device)
 
     // IGUITab* t1 = tab->addTab(L"Config");
 
-    // add some edit boxes and a button to tab one
-    env->addStaticText(L"X:", rect<s32>(22,48,40,66), false, false, wnd);
-    env->addEditBox(L"1.0", rect<s32>(40,46,130,66), true, wnd, GUI_ID_X_SCALE);
+	int x0 = 100;
+	int between= 30;
+	int w = 30;
 
-    env->addStaticText(L"Y:", rect<s32>(22,82,40,96), false, false, wnd);
-    env->addEditBox(L"1.0", rect<s32>(40,76,130,96), true, wnd, GUI_ID_Y_SCALE);
+    // Location 
+    env->addStaticText(L"Location:", rect<s32>(5,5 + OFFSET ,100,25 + OFFSET), false, false, wnd);
+    env->addEditBox(L"1.0", rect<s32>(x0,5+ OFFSET ,x0 + w,25+ OFFSET ), true, wnd, GUI_ID_X_SCALE);
 
-    env->addStaticText(L"Z:", rect<s32>(22,108,40,126), false, false, wnd);
-    env->addEditBox(L"1.0", rect<s32>(40,106,130,126), true, wnd, GUI_ID_Z_SCALE);
+    env->addEditBox(L"1.0", rect<s32>(x0 + w + between, 5 + OFFSET  ,x0 + w + between + w,25 + OFFSET ), true, wnd, GUI_ID_Y_SCALE);
 
-    env->addButton(rect<s32>(10,134,85,165), wnd, GUI_ID_BUTTON_SET_SCALE, L"Set");
+    env->addEditBox(L"1.0", rect<s32>(x0 + w + between + w + between,5 + OFFSET , x0 + w + between + w + between + w  ,25 + OFFSET ), true, wnd, GUI_ID_Z_SCALE);
 
-    // quick scale buttons
-    env->addButton(rect<s32>(65,20,95,40), wnd, GUI_ID_BUTTON_SCALE_MUL10, L"* 10");
-    env->addButton(rect<s32>(100,20,130,40), wnd, GUI_ID_BUTTON_SCALE_DIV10, L"* 0.1");
+	// Lcation Rotation
+    env->addStaticText(L"Rotation:", rect<s32>(5,30 + OFFSET ,100,50 + OFFSET ), false, false, wnd);
+    env->addEditBox(L"1.0", rect<s32>(x0,30+  OFFSET ,x0 + w,50 + OFFSET ), true, wnd, GUI_ID_X_SCALE);
 
+    env->addEditBox(L"1.0", rect<s32>(x0 + w + between,30 + OFFSET ,x0 + w + between + w,50 + OFFSET ), true, wnd, GUI_ID_Y_SCALE);
+
+    env->addEditBox(L"1.0", rect<s32>(x0 + w + between + w + between,30 + OFFSET , x0 + w + between + w + between + w  ,50 + OFFSET), true, wnd, GUI_ID_Z_SCALE);
+
+	// Lcation Scale
+    env->addStaticText(L"Scale:", rect<s32>(5,55 + OFFSET ,100,75 + OFFSET ), false, false, wnd);
+    env->addEditBox(L"1.0", rect<s32>(x0,55 +  OFFSET ,x0 + w,75 + OFFSET ), true, wnd, GUI_ID_X_SCALE);
+
+    env->addEditBox(L"1.0", rect<s32>(x0 + w + between,55 + OFFSET ,x0 + w + between + w,75 + OFFSET ), true, wnd, GUI_ID_Y_SCALE);
+
+    env->addEditBox(L"1.0", rect<s32>(x0 + w + between + w + between,55 + OFFSET , x0 + w + between + w + between + w  ,75 + OFFSET), true, wnd, GUI_ID_Z_SCALE);
     //updateScaleInfo(Model);
 
+
+	env->addImage(device->getVideoDriver()->getTexture("media/irrlichtlogo2.png"), position2d<int>(10,10));
 }
 
 typedef struct filesListStruct {
@@ -361,7 +374,7 @@ void addContentBrowserTreeItem(IGUITreeViewNode* nodeParent, std::string path){
 	int counter = filesCounter(path);
 	wchar_t wc[counter];
 	filesList filesList[counter];
-	
+
 	int size = scaner(filesList, path);
 	IGUITreeViewNode** node = new IGUITreeViewNode*[size];		// !!!
 
