@@ -42,6 +42,13 @@ struct SAppContext
 	IrrlichtDevice *device;
 };
 
+const wchar_t* _path;
+char buffer[BUFSIZE];
+int ret;
+IrrlichtDevice *device;
+
+
+
 // Define some values that we'll use to identify individual GUI controls.
 enum 
 {
@@ -115,6 +122,24 @@ enum
 
 #define PROPERTIES_WINDOW_POS_H EXPLORER_WINDOW_POS_Y + EXPLORER_WINDOW_POS_H
 
+void LoadModel(const char* _path) {
+	IAnimatedMesh* mesh = device->getSceneManager()->getMesh(_path);
+    if (!mesh)
+    {
+        device->drop();
+        exit(1);
+    }
+
+    IAnimatedMeshSceneNode* node = device->getSceneManager()->addAnimatedMeshSceneNode( mesh );
+
+	if (node)
+    {
+        node->setMaterialFlag(EMF_LIGHTING, false);
+        node->setMD2Animation(scene::EMAT_STAND);
+        //node->setMaterialTexture( 0, driver->getTexture("../../media/sydney.bmp") );
+    }
+}
+
 class MyEventReceiver : public IEventReceiver
 {
 private:
@@ -145,7 +170,7 @@ public:
 					}
 					return true;
 
-				case GUI_ID_FILE_OPEN_BUTTON:
+				case GUI_ID_ADD_BUTTON:
 					env->addFileOpenDialog(L"Please choose a file.", true, 0, -1, true);
 					return true;
 
@@ -156,9 +181,8 @@ public:
 
 			case EGET_FILE_SELECTED:
 				{
-					// show the model filename, selected in the file dialog
 					IGUIFileOpenDialog* dialog = (IGUIFileOpenDialog*)event.GUIEvent.Caller;
-					
+					LoadModel(core::stringc(dialog->getFileName()).c_str());
 				}
 				break;
 			}
@@ -255,9 +279,6 @@ void createToolBox(IrrlichtDevice *device)
 
     env->addEditBox(L"1.0", rect<s32>(x0 + w + between + w + between,55 + OFFSET , x0 + w + between + w + between + w  ,75 + OFFSET), true, wnd, GUI_ID_Z_SCALE);
     //updateScaleInfo(Model);
-
-
-	env->addImage(device->getVideoDriver()->getTexture("media/irrlichtlogo2.png"), position2d<int>(10,10));
 }
 
 typedef struct filesListStruct {
@@ -379,7 +400,7 @@ void addContentBrowserTreeItem(IGUITreeViewNode* nodeParent, std::string path){
 	IGUITreeViewNode** node = new IGUITreeViewNode*[size];		// !!!
 
 	for(int i = 0; i < size; i++) {
-		mbstowcs(wc, filesList[i].str.c_str(), size);
+		mbstowcs(wc, filesList[i].str.c_str(), size);	// Данная функция переобразует тип данных char*   в   wchar_t* 
 		node[i] = nodeParent->addChildBack(wc, 0);
 
 		if(filesList[i].type == DT_DIR) 
@@ -412,7 +433,7 @@ void addSceneExplorerTree(IGUITab* t1, IrrlichtDevice *device){
     SceneTree->getRoot()->clearChildren();
     addSceneTreeItem (device->getSceneManager()->getRootSceneNode(), SceneTree->getRoot(), device);
 
-	IGUIImageList* imageList = device->getGUIEnvironment()->createImageList(device->getVideoDriver()->getTexture ( "media/iconlist.png" ), dimension2di( 32, 32 ), true );
+	IGUIImageList* imageList = device->getGUIEnvironment()->createImageList(device->getVideoDriver()->getTexture ( "./media/iconlist.png" ), dimension2di( 32, 32 ), true );
 
     if ( imageList ){
         SceneTree->setImageList( imageList );
@@ -449,8 +470,6 @@ void createExplorer(IrrlichtDevice *device)
 
 }
 
-IrrlichtDevice *device;
-
 /*
 	Adds a SceneNode with an icon to the Scene Tree
 */
@@ -484,7 +503,7 @@ int main(int argc,char **argv){
 
 
 	IGUISkin* skin = guienv->getSkin();
-	IGUIFont* font = guienv->getFont("media/fontlucida.png");
+	IGUIFont* font = guienv->getFont("./media/fontlucida.png");
 	if (font)
 		skin->setFont(font);
 	else
@@ -540,7 +559,7 @@ int main(int argc,char **argv){
 	context.device = device;
 	 
 
-	IAnimatedMesh* mesh = smgr->getMesh("media/sydney.md2");
+	IAnimatedMesh* mesh = smgr->getMesh("./media/sydney.md2");
 	if (!mesh){
 		device->drop();
 		return 1;
@@ -550,7 +569,7 @@ int main(int argc,char **argv){
 	if (node){
 		node->setMaterialFlag(EMF_LIGHTING, false);
 		node->setMD2Animation(scene::EMAT_RUN);
-		node->setMaterialTexture( 0, driver->getTexture("media/sydney.bmp") );
+		node->setMaterialTexture( 0, driver->getTexture("./media/sydney.bmp") );
 	}
 
 	smgr->addCameraSceneNode(0, vector3df(0,30,-40), vector3df(0,5,0));
@@ -559,6 +578,11 @@ int main(int argc,char **argv){
 	createToolBox(device);
 	createExplorer(device);
 	
+	// Then create the event receiver, giving it that context structure.
+	MyEventReceiver receiver(context);
+
+	// And tell the device to use our custom event receiver.
+	device->setEventReceiver(&receiver);
 
 
   
