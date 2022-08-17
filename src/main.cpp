@@ -46,7 +46,11 @@ const wchar_t* _path;
 char buffer[BUFSIZE];
 int ret;
 IrrlichtDevice *device;
-
+scene::ISceneNode* Model = 0;
+core::stringc StartUpModelFile = "./media/dwarf.x";
+core::stringw Caption;
+bool Octree=false;
+bool UseLight=false;
 
 
 // Define some values that we'll use to identify individual GUI controls.
@@ -122,22 +126,87 @@ enum
 
 #define PROPERTIES_WINDOW_POS_H EXPLORER_WINDOW_POS_Y + EXPLORER_WINDOW_POS_H
 
-void LoadModel(const char* _path) {
-	IAnimatedMesh* mesh = device->getSceneManager()->getMesh(_path);
-    if (!mesh)
-    {
-        device->drop();
-        exit(1);
-    }
+void LoadModel(const c8* fn)
+{
+	// modify the name if it a .pk3 file
 
-    IAnimatedMeshSceneNode* node = device->getSceneManager()->addAnimatedMeshSceneNode( mesh );
+	io::path filename(fn);
 
-	if (node)
-    {
-        node->setMaterialFlag(EMF_LIGHTING, false);
-        node->setMD2Animation(scene::EMAT_STAND);
-        //node->setMaterialTexture( 0, driver->getTexture("../../media/sydney.bmp") );
-    }
+	io::path extension;
+	core::getFileNameExtension(extension, filename);
+	extension.make_lower();
+
+	// if a texture is loaded apply it to the current model..
+	if (extension == ".jpg" || extension == ".pcx" ||
+		extension == ".png" || extension == ".ppm" ||
+		extension == ".pgm" || extension == ".pbm" ||
+		extension == ".psd" || extension == ".tga" ||
+		extension == ".bmp" || extension == ".wal" ||
+		extension == ".rgb" || extension == ".rgba")
+	{
+		video::ITexture * texture =
+			device->getVideoDriver()->getTexture( filename );
+		if ( texture && Model )
+		{
+			// always reload texture
+			device->getVideoDriver()->removeTexture(texture);
+			texture = device->getVideoDriver()->getTexture( filename );
+
+			Model->setMaterialTexture(0, texture);
+		}
+		return;
+	}
+	// if a archive is loaded add it to the FileArchive..
+	else if (extension == ".pk3" || extension == ".zip" || extension == ".pak" || extension == ".npk")
+	{
+		device->getFileSystem()->addFileArchive(filename.c_str());
+		return;
+	}
+
+	// load a model into the engine
+
+	if (Model)
+		Model->remove();
+
+	Model = 0;
+
+	if (extension==".irr")
+	{
+		core::array<scene::ISceneNode*> outNodes;
+		device->getSceneManager()->loadScene(filename);
+		device->getSceneManager()->getSceneNodesFromType(scene::ESNT_ANIMATED_MESH, outNodes);
+		if (outNodes.size())
+			Model = outNodes[0];
+		return;
+	}
+
+	scene::IAnimatedMesh* m = device->getSceneManager()->getMesh( filename.c_str() );
+
+	if (!m)
+	{
+		// model could not be loaded
+
+		if (StartUpModelFile != filename)
+			device->getGUIEnvironment()->addMessageBox(
+			Caption.c_str(), L"The model could not be loaded. " \
+			L"Maybe it is not a supported file format.");
+		return;
+	}
+
+	// set default material properties
+
+	if (Octree)
+		Model = device->getSceneManager()->addOctreeSceneNode(m->getMesh(0));
+	else
+	{
+		scene::IAnimatedMeshSceneNode* animModel = device->getSceneManager()->addAnimatedMeshSceneNode(m);
+		animModel->setAnimationSpeed(30);
+		Model = animModel;
+	}
+	Model->setMaterialFlag(video::EMF_LIGHTING, UseLight);
+	Model->setMaterialFlag(video::EMF_NORMALIZE_NORMALS, UseLight);
+//	Model->setMaterialFlag(video::EMF_BACK_FACE_CULLING, false);
+	Model->setDebugDataVisible(scene::EDS_OFF);
 }
 
 class MyEventReceiver : public IEventReceiver
@@ -558,19 +627,7 @@ int main(int argc,char **argv){
 	SAppContext context;
 	context.device = device;
 	 
-
-	IAnimatedMesh* mesh = smgr->getMesh("./media/sydney.md2");
-	if (!mesh){
-		device->drop();
-		return 1;
-	}
-
-	IAnimatedMeshSceneNode* node = smgr->addAnimatedMeshSceneNode( mesh );
-	if (node){
-		node->setMaterialFlag(EMF_LIGHTING, false);
-		node->setMD2Animation(scene::EMAT_RUN);
-		node->setMaterialTexture( 0, driver->getTexture("./media/sydney.bmp") );
-	}
+	LoadModel(StartUpModelFile.c_str());
 
 	smgr->addCameraSceneNode(0, vector3df(0,30,-40), vector3df(0,5,0));
 
