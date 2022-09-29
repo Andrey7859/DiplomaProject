@@ -1,36 +1,14 @@
-#include <irrlicht.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <GL/glut.h>
-#include <string>
-#include <iostream>
-#include <dirent.h>
-
-
-using namespace std;
-
-using namespace irr;
-
-using namespace core;
-using namespace scene;
-using namespace video;
-using namespace io;
-using namespace gui;
-
-#define BUTTON_SIZE 32
-#define OFFSET ((Height / 10) - (BUTTON_SIZE * 2)) / 2
-
-#define BUFSIZE 255
+#include "headers/Header.hpp"
+#include "headers/Model.hpp"
 
 int Width;
 int Height;
 /*
 По этим подключениям остались вопросы
 
-Чтобы иметь возможность использовать файл Irrlicht.DLL, нам нужно связать его с Irrlicht.lib. Мы могли бы установить эту опцию в настройках проекта,
-но для простоты мы используем библиотеку pragma comment lib для VisualStudio. На платформах Windows мы должны избавиться от окна консоли, которое
-появляется при запуске программы с помощью main(). Это делается второй прагмой. Мы также могли бы использовать метод WinMain, но тогда потеряли бы
-независимость от платформы.
+Чтобы использовать файл Irrlicht.DLL, нам нужно связать его с Irrlicht.lib. Для этого мы используем библиотеку pragma comment lib для VisualStudio. 
+На платформах Windows мы должны избавиться от окна консоли, котороепоявляется при запуске программы с помощью main(). Это делается второй прагмой.
+ Мы также могли бы использовать метод WinMain, но тогда потеряли бы независимость от платформы.
 */
 #ifdef _IRR_WINDOWS_
 #pragma comment(lib, "Irrlicht.lib")
@@ -45,170 +23,20 @@ struct SAppContext
 const wchar_t* _path;
 char buffer[BUFSIZE];
 int ret;
-IrrlichtDevice *device;
-scene::ISceneNode* Model = 0;
-core::stringc StartUpModelFile = "./media/dwarf.x";
-core::stringw Caption;
-bool Octree=false;
-bool UseLight=false;
+ISceneNode** selectedModel;
+IGUITreeView* SceneTree;
+Model Model;
 
 
-// Define some values that we'll use to identify individual GUI controls.
-enum 
-{
-	GUI_ID_QUIT_BUTTON = 101,
-	GUI_ID_NEW_WINDOW_BUTTON,
-	GUI_ID_FILE_OPEN_BUTTON,
-	GUI_ID_TRANSPARENCY_SCROLL_BAR,
+ISceneNode* node;
 
-	GUI_ID_DIALOG_ROOT_WINDOW,
-	GUI_ID_DIALOG_ROOT_2_WINDOW,
-	GUI_ID_DIALOG_ROOT_3_WINDOW,
 
-	GUI_ID_X_SCALE,
-	GUI_ID_Y_SCALE,
-	GUI_ID_Z_SCALE,
-
-	GUI_ID_BUTTON_SET_SCALE,
-	GUI_ID_BUTTON_SCALE_MUL10,
-	GUI_ID_BUTTON_SCALE_DIV10,
-
-	// Buttons
-	GUI_ID_ADD_BUTTON,
-	GUI_ID_SAVE_BUTTON,
-	GUI_ID_DELETE_BUTTON,
-
-	GUI_ID_SELECT_BUTTON,
-	GUI_ID_BRUSH_BUTTON,
-	GUI_ID_MOVE_BUTTON,
-	
-	GUI_ID_PERSPECTIVE_BUTTON,
-	GUI_ID_TOP_BUTTON,
-	GUI_ID_FRONT_BUTTON,
-	GUI_ID_LEFT_BUTTON,
-	GUI_ID_ASK_BUTTON,
-
-	GUI_ID_SIMPLE_BUTTON,
-	GUI_ID_BBOX_BUTTON,
-	GUI_ID_WIREFRAME_BUTTON,
-
-	// Topbar
-	GUI_ID_OPEN_MODEL,
-	GUI_ID_SAVE_MODEL,
-	GUI_ID_DELETE_MODEL,
-	GUI_ID_QUIT,
-
-	GUI_ID_SELECT,
-	GUI_ID_BRUSH,
-	GUI_ID_MOVE,
-	
-	GUI_ID_VIEW,
-	GUI_ID_CAMERA,
-
-	GUI_ID_SOLID,
-	GUI_ID_WAREFRANE,
-	GUI_ID_REFLECATION,
-
-	GUI_ID_PERSPECTIVE,
-	GUI_ID_TOP,
-	GUI_ID_LEFT,
-	GUI_ID_FRONT,
-	GUI_ID_BACK,
-	GUI_ID_BOTTOM,
-	GUI_ID_RIGHT,
-
-	GUI_ID_ABOUT
-	
-};
-
+// Макросы для работы с окнами
 #define EXPLORER_WINDOW_POS_Y BUTTON_SIZE + (OFFSET * 2)// 
 #define EXPLORER_WINDOW_POS_H ((Height / 2) - (EXPLORER_WINDOW_POS_Y * 2 - OFFSET))
-
 #define PROPERTIES_WINDOW_POS_H EXPLORER_WINDOW_POS_Y + EXPLORER_WINDOW_POS_H
 
-void LoadModel(const c8* fn)
-{
-	// modify the name if it a .pk3 file
-
-	io::path filename(fn);
-
-	io::path extension;
-	core::getFileNameExtension(extension, filename);
-	extension.make_lower();
-
-	// if a texture is loaded apply it to the current model..
-	if (extension == ".jpg" || extension == ".pcx" ||
-		extension == ".png" || extension == ".ppm" ||
-		extension == ".pgm" || extension == ".pbm" ||
-		extension == ".psd" || extension == ".tga" ||
-		extension == ".bmp" || extension == ".wal" ||
-		extension == ".rgb" || extension == ".rgba")
-	{
-		video::ITexture * texture =
-			device->getVideoDriver()->getTexture( filename );
-		if ( texture && Model )
-		{
-			// always reload texture
-			device->getVideoDriver()->removeTexture(texture);
-			texture = device->getVideoDriver()->getTexture( filename );
-
-			Model->setMaterialTexture(0, texture);
-		}
-		return;
-	}
-	// if a archive is loaded add it to the FileArchive..
-	else if (extension == ".pk3" || extension == ".zip" || extension == ".pak" || extension == ".npk")
-	{
-		device->getFileSystem()->addFileArchive(filename.c_str());
-		return;
-	}
-
-	// load a model into the engine
-
-	if (Model)
-		Model->remove();
-
-	Model = 0;
-
-	if (extension==".irr")
-	{
-		core::array<scene::ISceneNode*> outNodes;
-		device->getSceneManager()->loadScene(filename);
-		device->getSceneManager()->getSceneNodesFromType(scene::ESNT_ANIMATED_MESH, outNodes);
-		if (outNodes.size())
-			Model = outNodes[0];
-		return;
-	}
-
-	scene::IAnimatedMesh* m = device->getSceneManager()->getMesh( filename.c_str() );
-
-	if (!m)
-	{
-		// model could not be loaded
-
-		if (StartUpModelFile != filename)
-			device->getGUIEnvironment()->addMessageBox(
-			Caption.c_str(), L"The model could not be loaded. " \
-			L"Maybe it is not a supported file format.");
-		return;
-	}
-
-	// set default material properties
-
-	if (Octree)
-		Model = device->getSceneManager()->addOctreeSceneNode(m->getMesh(0));
-	else
-	{
-		scene::IAnimatedMeshSceneNode* animModel = device->getSceneManager()->addAnimatedMeshSceneNode(m);
-		animModel->setAnimationSpeed(30);
-		Model = animModel;
-	}
-	Model->setMaterialFlag(video::EMF_LIGHTING, UseLight);
-	Model->setMaterialFlag(video::EMF_NORMALIZE_NORMALS, UseLight);
-//	Model->setMaterialFlag(video::EMF_BACK_FACE_CULLING, false);
-	Model->setDebugDataVisible(scene::EDS_OFF);
-}
-
+// Создаем класс для отлавливания обработки всех событий
 class MyEventReceiver : public IEventReceiver
 {
 private:
@@ -222,7 +50,10 @@ public:
 		if (event.EventType == EET_GUI_EVENT)		// Оставляем события относящиеся к приложению интерфейса
 		{
 			s32 id = event.GUIEvent.Caller->getID();
-			IGUIEnvironment* env = Context.device->getGUIEnvironment();
+			IGUIEnvironment* env = Context.device->getGUIEnvironment(); //Это окружение графического интерфейса пользователя(Список виджетов ползунков
+																		//которые харнятся в движке)
+
+			int x, y, z;
 
 			switch(event.GUIEvent.EventType)
 			{
@@ -251,10 +82,33 @@ public:
 			case EGET_FILE_SELECTED:
 				{
 					IGUIFileOpenDialog* dialog = (IGUIFileOpenDialog*)event.GUIEvent.Caller;
-					LoadModel(core::stringc(dialog->getFileName()).c_str());
+					Model.LoadModel(core::stringc(dialog->getFileName()).c_str());
 				}
 				break;
+			case EGET_EDITBOX_ENTER:
+				switch(id){
+					case GUI_ID_X_POS:
+					    IGUIElement* toolboxWnd = device->getGUIEnvironment()->getRootGUIElement()->getElementFromId(GUI_ID_DIALOG_ROOT_WINDOW, true);
+						const wchar_t* text = toolboxWnd->getElementFromId(GUI_ID_X_POS, true)->getText();
+						
+						int numeric_peek = wcstol(text, NULL, 10); // осуществляет перевод из const wchar_t в int
+						cout << "\n \t "<< numeric_peek << endl;
+						
+						// Model.setPosition(numeric_peek);
+						break;
+					//case GUI_ID_Y_POS:
+						//x = ;
+						//node->setPosition(X);
+						//break;
+					//case GUI_ID_Z_POS:
+						//x = ;
+						//node->setPosition(X);
+						//break;
+				}
+
+				Model.updatePosInfo();
 			}
+
 		}
 
 		return false;
@@ -262,8 +116,9 @@ public:
 
 };
 
+//Функция создание поля кнопок
+
 void createButtonsField(IrrlichtDevice *device, IVideoDriver* driver){
-	 // remove tool box if already there
     IGUIEnvironment* env = device->getGUIEnvironment();
     IGUIElement* root = env->getRootGUIElement();
     IGUIElement* e = root->getElementFromId(GUI_ID_DIALOG_ROOT_2_WINDOW, true);
@@ -271,12 +126,12 @@ void createButtonsField(IrrlichtDevice *device, IVideoDriver* driver){
 	if (e)
         e->remove();
 
-    // create the toolbox window
+    // Создание верхней панели для кнопок
     IGUIWindow* wnd = env->addWindow(rect<s32>(0, OFFSET, Width, BUTTON_SIZE + (OFFSET * 2)), false, L"qwer", 0, GUI_ID_DIALOG_ROOT_2_WINDOW);
 	// wnd->setDraggable(false);
 	wnd->setDrawTitlebar(false);
 
-	// create a buttons
+	// Создане кнопок
 	env->addButton(rect<s32>(OFFSET, OFFSET / 2, BUTTON_SIZE + OFFSET, BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_ADD_BUTTON, L"ADD", L"Add Fille");
 	env->addButton(rect<s32>((OFFSET * 2) + BUTTON_SIZE, OFFSET / 2, (BUTTON_SIZE + OFFSET) * 2, BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_SAVE_BUTTON, L"SAVE", L"Save project");
 	env->addButton(rect<s32>((OFFSET * 3) + (BUTTON_SIZE * 2), OFFSET / 2, (BUTTON_SIZE + OFFSET) * 3, BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_DELETE_BUTTON, L"DELETE", L"Deletes the selected element");
@@ -295,14 +150,13 @@ void createButtonsField(IrrlichtDevice *device, IVideoDriver* driver){
 	env->addButton(rect<s32>((OFFSET * 16) + (BUTTON_SIZE * 12), OFFSET / 2, (BUTTON_SIZE * 13) + (OFFSET * 16), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_BBOX_BUTTON, L"BBoX", L"Exits Program");
 	env->addButton(rect<s32>((OFFSET * 17) + (BUTTON_SIZE * 13), OFFSET / 2, (BUTTON_SIZE * 14) + (OFFSET * 17), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_WIREFRAME_BUTTON, L"WIREFRAME", L"Exits Program");
 	
-	/*driver->draw2DLine(position2d<s32>( 300, 300 ),
+	/*driver->draw2DLine(position2d<s32>( 300, 300 ), Попытка сделать сепаратор
 	 position2d<s32>( 600, 600) ,
 	  SColor(255,0,0,255));*/
 }
-
+// Функция созданя Toolset -> Properties
 void createToolBox(IrrlichtDevice *device)
 {
-    // remove tool box if already there
     IGUIEnvironment* env = device->getGUIEnvironment();
     IGUIElement* root = env->getRootGUIElement();
     IGUIElement* e = root->getElementFromId(GUI_ID_DIALOG_ROOT_WINDOW, true);
@@ -310,7 +164,7 @@ void createToolBox(IrrlichtDevice *device)
 	if (e)
         e->remove();
 
-    // create the toolbox window   Toolset   от края     отступ с верху   ширина    длина вниз
+    // Созадния окна Toolset   				  от края     отступ с верху   ширина    длина вниз
     IGUIWindow* wnd = env->addWindow(rect<s32>(0, EXPLORER_WINDOW_POS_Y, 300, PROPERTIES_WINDOW_POS_H), false, L"Toolset", 0, GUI_ID_DIALOG_ROOT_WINDOW);
 
 
@@ -324,45 +178,49 @@ void createToolBox(IrrlichtDevice *device)
 	int between= 30;
 	int w = 30;
 
-    // Location 
+    // Location (Расположение)
     env->addStaticText(L"Location:", rect<s32>(5,5 + OFFSET ,100,25 + OFFSET), false, false, wnd);
-    env->addEditBox(L"1.0", rect<s32>(x0,5+ OFFSET ,x0 + w,25+ OFFSET ), true, wnd, GUI_ID_X_SCALE);
+    env->addEditBox(L"2.0", rect<s32>(x0,5+ OFFSET ,x0 + w,25+ OFFSET ), true, wnd, GUI_ID_X_POS);
 
-    env->addEditBox(L"1.0", rect<s32>(x0 + w + between, 5 + OFFSET  ,x0 + w + between + w,25 + OFFSET ), true, wnd, GUI_ID_Y_SCALE);
+    env->addEditBox(L"1.0", rect<s32>(x0 + w + between, 5 + OFFSET  ,x0 + w + between + w,25 + OFFSET ), true, wnd, GUI_ID_Y_POS);
 
-    env->addEditBox(L"1.0", rect<s32>(x0 + w + between + w + between,5 + OFFSET , x0 + w + between + w + between + w  ,25 + OFFSET ), true, wnd, GUI_ID_Z_SCALE);
+    env->addEditBox(L"1.0", rect<s32>(x0 + w + between + w + between,5 + OFFSET , x0 + w + between + w + between + w  ,25 + OFFSET ), true, wnd, GUI_ID_Z_POS);
 
-	// Lcation Rotation
+	// Location Rotation (Расположение :: Варащение)
     env->addStaticText(L"Rotation:", rect<s32>(5,30 + OFFSET ,100,50 + OFFSET ), false, false, wnd);
-    env->addEditBox(L"1.0", rect<s32>(x0,30+  OFFSET ,x0 + w,50 + OFFSET ), true, wnd, GUI_ID_X_SCALE);
+    env->addEditBox(L"1.0", rect<s32>(x0,30+  OFFSET ,x0 + w,50 + OFFSET ), true, wnd, GUI_ID_X_ROT);
 
-    env->addEditBox(L"1.0", rect<s32>(x0 + w + between,30 + OFFSET ,x0 + w + between + w,50 + OFFSET ), true, wnd, GUI_ID_Y_SCALE);
+    env->addEditBox(L"1.0", rect<s32>(x0 + w + between,30 + OFFSET ,x0 + w + between + w,50 + OFFSET ), true, wnd, GUI_ID_Y_ROT);
 
-    env->addEditBox(L"1.0", rect<s32>(x0 + w + between + w + between,30 + OFFSET , x0 + w + between + w + between + w  ,50 + OFFSET), true, wnd, GUI_ID_Z_SCALE);
+    env->addEditBox(L"1.0", rect<s32>(x0 + w + between + w + between,30 + OFFSET , x0 + w + between + w + between + w  ,50 + OFFSET), true, wnd, GUI_ID_Z_ROT);
 
-	// Lcation Scale
+	// Location Scale (Расположение :: Маштаб)
     env->addStaticText(L"Scale:", rect<s32>(5,55 + OFFSET ,100,75 + OFFSET ), false, false, wnd);
     env->addEditBox(L"1.0", rect<s32>(x0,55 +  OFFSET ,x0 + w,75 + OFFSET ), true, wnd, GUI_ID_X_SCALE);
 
     env->addEditBox(L"1.0", rect<s32>(x0 + w + between,55 + OFFSET ,x0 + w + between + w,75 + OFFSET ), true, wnd, GUI_ID_Y_SCALE);
 
     env->addEditBox(L"1.0", rect<s32>(x0 + w + between + w + between,55 + OFFSET , x0 + w + between + w + between + w  ,75 + OFFSET), true, wnd, GUI_ID_Z_SCALE);
-    //updateScaleInfo(Model);
+    
+	Model.updatePosInfo();
 }
 
+// Структура для работы с функцией scaner
 typedef struct filesListStruct {
 	std::string str;
 	int type;
 } filesList;
 
+//Функция выводит количество файлов в директории (Нужна для подсчета точного количесво выделяемой оперативной памяти)
 int filesCounter(std::string path) {
 	DIR *dir;
 	struct dirent *ent;
 	int filesListSize = 0;
 
-	if ((dir = opendir (path.c_str())) != NULL) {
+	if ((dir = opendir (path.c_str())) != NULL) { //Сравнивает получилось ли открыть директорию
 		while ((ent = readdir (dir)) != NULL) {
-			if(strcmp(".", ent->d_name) == 0 || strcmp("..", ent->d_name) == 0)
+			if(strcmp(".", ent->d_name) == 0 || strcmp("..", ent->d_name) == 0) // ".." / "." - Это ссылки для перехода в другую директрию. Здесь прои
+																				//сходит исключение этих ссылкок из общего списка файлов
                 continue;
 
 			filesListSize++;
@@ -373,7 +231,7 @@ int filesCounter(std::string path) {
 
 	return filesListSize;
 }
-
+// Заполняет массив структур файлами и папками и выводит кол-во файлов в директории
 int scaner(filesList filesList[BUFSIZE], std::string path){
 	DIR *dir;
 	struct dirent *ent;
@@ -395,6 +253,7 @@ int scaner(filesList filesList[BUFSIZE], std::string path){
 	return filesListSize;
 }
 
+//Функция выводит элемент загруженный на сцену
 void addSceneTreeItem( ISceneNode * parent, IGUITreeViewNode* nodeParent, IrrlichtDevice *device)
 {
 	IGUITreeViewNode* node;
@@ -430,9 +289,9 @@ void addSceneTreeItem( ISceneNode * parent, IGUITreeViewNode* nodeParent, Irrlic
 			// printf("\n\tname: %s\n", (*it)->getName());
 		}
 
-		node = nodeParent->addChildBack( msg, 0, imageIndex );
+		node = nodeParent->addChildBack( msg, 0, imageIndex ); //Добавляет ребенка в конец списка элеметов родтеля(Список является частью дерева)
 
-		// Add all Animators
+		// Отностся к анимированным элементам
 		list<ISceneNodeAnimator*>::ConstIterator ait = (*it)->getAnimators().begin();
 		for (; ait != (*it)->getAnimators().end(); ++ait)
 		{
@@ -459,24 +318,26 @@ void addSceneTreeItem( ISceneNode * parent, IGUITreeViewNode* nodeParent, Irrlic
 		addSceneTreeItem ( *it, node, device);
 	}
 }
-
+//Данная функция позволяет повторно сканировать директории по которым проходимся
 void addContentBrowserTreeItem(IGUITreeViewNode* nodeParent, std::string path){
-	int counter = filesCounter(path);
+	int counter = filesCounter(path); // Число файлов в директории
 	wchar_t wc[counter];
 	filesList filesList[counter];
 
-	int size = scaner(filesList, path);
-	IGUITreeViewNode** node = new IGUITreeViewNode*[size];		// !!!
+	int size = scaner(filesList, path); //Заполняет количеством файлов, заполняет массив filesList
+	IGUITreeViewNode** node = new IGUITreeViewNode*[size];		// !!! Выделение динамической памяти массива
 
 	for(int i = 0; i < size; i++) {
 		mbstowcs(wc, filesList[i].str.c_str(), size);	// Данная функция переобразует тип данных char*   в   wchar_t* 
-		node[i] = nodeParent->addChildBack(wc, 0);
+		node[i] = nodeParent->addChildBack(wc, 0);	// Заполняем встроенную струк.данных (дерево) чтобы использовать (gui Обозревателя(Explorer))
 
-		if(filesList[i].type == DT_DIR) 
-			addContentBrowserTreeItem(node[i], path + "/" + filesList[i].str);
+		if(filesList[i].type == DT_DIR) // Если текущий элемент папка
+			addContentBrowserTreeItem(node[i], path + "/" + filesList[i].str);  // 1 элемент явялется родителем, 2 элемент берет путь добавляет "/"
+																				//и добавляет текущий элемент (Рекурсия)
 	}
 }
 
+//Создание подокна отображеия на сцене Contetnt Browser 
 void addContentBrowserTree(IGUITab* t2, IrrlichtDevice *device) {
 	IGUITreeView* SceneTree;
 
@@ -493,16 +354,15 @@ void addContentBrowserTree(IGUITab* t2, IrrlichtDevice *device) {
     // }
 }
 
+//Создание подокна отображеия на сцене Scene Explorer
 void addSceneExplorerTree(IGUITab* t1, IrrlichtDevice *device){	
-	  // create a visible Scene Tree
-	IGUITreeView* SceneTree;
 
     SceneTree = device->getGUIEnvironment()->addTreeView(rect<s32>( 0, OFFSET, 300, PROPERTIES_WINDOW_POS_H ), t1, -1, true, true, false );
     SceneTree->setToolTipText ( L"Show the current Scenegraph" );
     SceneTree->getRoot()->clearChildren();
     addSceneTreeItem (device->getSceneManager()->getRootSceneNode(), SceneTree->getRoot(), device);
 
-	IGUIImageList* imageList = device->getGUIEnvironment()->createImageList(device->getVideoDriver()->getTexture ( "./media/iconlist.png" ), dimension2di( 32, 32 ), true );
+	IGUIImageList* imageList = device->getGUIEnvironment()->createImageList(device->getVideoDriver()->getTexture ( "../media/iconlist.png" ), dimension2di( 32, 32 ), true );
 
     if ( imageList ){
         SceneTree->setImageList( imageList );
@@ -511,9 +371,9 @@ void addSceneExplorerTree(IGUITab* t1, IrrlichtDevice *device){
 
 }
 
+//Создание окна Explorer 
 void createExplorer(IrrlichtDevice *device)
 {
-    // remove tool box if already there
     IGUIEnvironment* env = device->getGUIEnvironment();
     IGUIElement* root = env->getRootGUIElement();
     IGUIElement* e = root->getElementFromId(GUI_ID_DIALOG_ROOT_3_WINDOW, true);
@@ -535,13 +395,8 @@ void createExplorer(IrrlichtDevice *device)
     IGUITab* t2 = tab->addTab(L"Content browser");
 	addContentBrowserTree(t2, device);
 
-    //updateScaleInfo(Model);
-
+    //Model.updatePosInfo(Model);
 }
-
-/*
-	Adds a SceneNode with an icon to the Scene Tree
-*/
 
 int main(int argc,char **argv){
 
@@ -561,31 +416,31 @@ int main(int argc,char **argv){
 	device->setWindowCaption(L"Hello World! - Irrlicht Engine Demo");
 	// device->setResizable(true);
 
+	//IGUITreeViewNode * select = SceneTree->getSelected(); //Получение выбраного из дерева
+	//selectedModel = (ISceneNode*)select->getData(); // Преобразование типов данных
+
 	/*
 	Создаем указатели на VideoDriver, SceneManager и  GUI
 	*/
-	IVideoDriver* driver = device->getVideoDriver();
+	IVideoDriver* driver = device->getVideoDriver(); // Видеодрайвер для отрисовки
 	ISceneManager* smgr = device->getSceneManager(); // создает объекты управляет перемещает менеджер делает управление
-	IGUIEnvironment* guienv = device->getGUIEnvironment(); //Окружение панели упраления
-
-
-
+	IGUIEnvironment* guienv = device->getGUIEnvironment(); //Список всех виджитов
 
 	IGUISkin* skin = guienv->getSkin();
-	IGUIFont* font = guienv->getFont("./media/fontlucida.png");
+	IGUIFont* font = guienv->getFont("../media/fontlucida.png");
 	if (font)
-		skin->setFont(font);
+		skin->setFont(font); //шрифт
 	else
 		skin->setFont(guienv->getBuiltInFont(), EGDF_TOOLTIP);
 
-	// create menu
+	// Создания меню
 	gui::IGUIContextMenu* menu = guienv->addMenu();
 	menu->addItem(L"File", -1, true, true);		// 0	
 	menu->addItem(L"Edit", -1, true, true);		// 1
 	menu->addItem(L"View", -1, true, true);		// 2
 	menu->addItem(L"Help", -1, true, true);		// 3
 
-	// File
+	// Вкладкай файл (file)
 	gui::IGUIContextMenu* submenu;
 	submenu = menu->getSubMenu(0);
 	submenu->addItem(L"Open Model File", GUI_ID_OPEN_MODEL);
@@ -594,13 +449,13 @@ int main(int argc,char **argv){
 	submenu->addSeparator();
 	submenu->addItem(L"Quit", GUI_ID_QUIT);
 
-	// Edit
+	// Вкладка редактровать (Edit)
 	submenu = menu->getSubMenu(1);
 	submenu->addItem(L"Select", GUI_ID_SELECT);
 	submenu->addItem(L"Brush", GUI_ID_BRUSH);
 	submenu->addItem(L"Move", GUI_ID_MOVE);
 
-	// // View
+	// Вкладка вид (View)
 	submenu = menu->getSubMenu(2);
 	submenu->addItem(L"View", GUI_ID_VIEW, true, true);
 	submenu->addItem(L"Camera", GUI_ID_CAMERA, true, true);
@@ -619,7 +474,7 @@ int main(int argc,char **argv){
 		submenu->addItem(L"Bottom", GUI_ID_BOTTOM);
 		submenu->addItem(L"Right", GUI_ID_RIGHT);
 
-	// // About
+	// Вкладка о прииложении (About)
 	submenu = menu->getSubMenu(3);
 	submenu->addItem(L"About", GUI_ID_ABOUT);
 
@@ -627,7 +482,7 @@ int main(int argc,char **argv){
 	SAppContext context;
 	context.device = device;
 	 
-	LoadModel(StartUpModelFile.c_str());
+	Model.LoadModel(StartUpModelFile.c_str());
 
 	smgr->addCameraSceneNode(0, vector3df(0,30,-40), vector3df(0,5,0));
 
@@ -635,17 +490,21 @@ int main(int argc,char **argv){
 	createToolBox(device);
 	createExplorer(device);
 	
-	// Then create the event receiver, giving it that context structure.
+	// Создаем объект receiver на основе класса MyEventReceiver. Передаем структуру Context
+					//Накопитель
 	MyEventReceiver receiver(context);
 
 	// And tell the device to use our custom event receiver.
 	device->setEventReceiver(&receiver);
 
 
-  
+
+
+
+
 	while(device->run()){
 		// if (device->isWindowActive()) {
-		driver->beginScene(true, true, SColor(255,100,101,140));
+		driver->beginScene(true, true, SColor(255,100,101,140)); // Отчищает буфер глубина каждый кадр
 
 		smgr->drawAll();
 		guienv->drawAll();
