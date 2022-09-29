@@ -7,6 +7,7 @@
 #include <string>
 #include <iostream>
 #include <dirent.h>
+#include <vector>
 
 using namespace std;
 

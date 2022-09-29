@@ -46,6 +46,16 @@ public:
 	vector3d< int > getPosition();
 	ISceneNode* getModel();
 	void updatePosInfo();
+	Model& operator=(const Model& right) {
+        //проверка на самоприсваивание
+        if (this == &right) {
+            return *this;
+        }
+		_Model = right._Model;
+		position = right.position;
+        return *this;
+    }
+
 
 	
 

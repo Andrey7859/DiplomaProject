@@ -25,7 +25,9 @@ char buffer[BUFSIZE];
 int ret;
 ISceneNode** selectedModel;
 IGUITreeView* SceneTree;
-Model Model;
+Model CurrentObject;
+std::vector<Model> Objects;
+
 
 
 ISceneNode* node;
@@ -84,8 +86,10 @@ public:
 
 			case EGET_FILE_SELECTED:
 				{
+					Model* tmp = new Model; 
 					IGUIFileOpenDialog* dialog = (IGUIFileOpenDialog*)event.GUIEvent.Caller;
-					Model.LoadModel(core::stringc(dialog->getFileName()).c_str());
+					tmp->LoadModel(core::stringc(dialog->getFileName()).c_str());
+					Objects.push_back(*tmp);
 				}
 				break;
 			case EGET_EDITBOX_ENTER:
@@ -96,7 +100,7 @@ public:
 						
 						coord.X = wcstol(text, NULL, 10); // осуществляет перевод из const wchar_t в int
 					
-						Model.getModel()->setPosition(coord);
+						CurrentObject.getModel()->setPosition(coord);
 						break;
 					case GUI_ID_Y_POS:
 						toolboxWnd = device->getGUIEnvironment()->getRootGUIElement()->getElementFromId(GUI_ID_DIALOG_ROOT_WINDOW, true);
@@ -104,7 +108,7 @@ public:
 						
 						coord.Y = wcstol(text, NULL, 10); // осуществляет перевод из const wchar_t в int
 
-						Model.getModel()->setPosition(coord);
+						CurrentObject.getModel()->setPosition(coord);
 						break;
 					case GUI_ID_Z_POS:
 						toolboxWnd = device->getGUIEnvironment()->getRootGUIElement()->getElementFromId(GUI_ID_DIALOG_ROOT_WINDOW, true);
@@ -112,11 +116,11 @@ public:
 						
 						coord.Z = wcstol(text, NULL, 10); // осуществляет перевод из const wchar_t в int						
 
-						Model.getModel()->setPosition(coord);
+						CurrentObject.getModel()->setPosition(coord);
 						break;
 				}
 
-				Model.updatePosInfo();
+				CurrentObject.updatePosInfo();
 			}
 
 		}
@@ -212,7 +216,7 @@ void createToolBox(IrrlichtDevice *device)
 
     env->addEditBox(L"1.0", rect<s32>(x0 + w + between + w + between,55 + OFFSET , x0 + w + between + w + between + w  ,75 + OFFSET), true, wnd, GUI_ID_Z_SCALE);
     
-	Model.updatePosInfo();
+	CurrentObject.updatePosInfo();
 }
 
 // Структура для работы с функцией scaner
@@ -410,7 +414,6 @@ void createExplorer(IrrlichtDevice *device)
 
 int main(int argc,char **argv){
 
-
 	glutInit(&argc,argv);
 	Width = glutGet(GLUT_SCREEN_WIDTH);
     Height = glutGet(GLUT_SCREEN_HEIGHT);
@@ -492,7 +495,11 @@ int main(int argc,char **argv){
 	SAppContext context;
 	context.device = device;
 	 
-	Model.LoadModel(StartUpModelFile.c_str());
+	// Model.LoadModel(StartUpModelFile.c_str());
+	Model* tmp = new Model;
+	tmp->LoadModel(StartUpModelFile.c_str());
+	Objects.push_back(*tmp);
+	CurrentObject = Objects[0];
 
 	smgr->addCameraSceneNode(0, vector3df(0,30,-40), vector3df(0,5,0));
 
