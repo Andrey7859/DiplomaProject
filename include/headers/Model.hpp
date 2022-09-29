@@ -44,6 +44,7 @@ public:
     void LoadModel(const c8* fn);
 	// void setPosition(vector3df newPos);
 	vector3d< int > getPosition();
+	ISceneNode* getModel();
 	void updatePosInfo();
 
 	
@@ -113,7 +114,7 @@ void Model::LoadModel(const c8* fn) {
 
 	// auto m = parce(extension);
 
-	IAnimatedMesh* m = Device->getSceneManager()->getMesh( filename.c_str() );
+	IAnimatedMesh* m = device->getSceneManager()->getMesh( filename.c_str() );
 
 
 	// Если модель не может быть загружена
@@ -146,6 +147,11 @@ void Model::LoadModel(const c8* fn) {
 // void Model::setPosition(vector3df newPos){
 // 	_Model->setPosition(vector3df(newPos));
 // }
+
+ISceneNode* Model::getModel() {
+	return _Model;
+}
+
 
 void Model::updatePosInfo()
 {

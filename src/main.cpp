@@ -53,7 +53,10 @@ public:
 			IGUIEnvironment* env = Context.device->getGUIEnvironment(); //Это окружение графического интерфейса пользователя(Список виджетов ползунков
 																		//которые харнятся в движке)
 
-			int x, y, z;
+			// int x, y, z;
+			IGUIElement* toolboxWnd;
+			const wchar_t* text;
+			vector3df coord(0, 0, 0);
 
 			switch(event.GUIEvent.EventType)
 			{
@@ -88,22 +91,29 @@ public:
 			case EGET_EDITBOX_ENTER:
 				switch(id){
 					case GUI_ID_X_POS:
-					    IGUIElement* toolboxWnd = device->getGUIEnvironment()->getRootGUIElement()->getElementFromId(GUI_ID_DIALOG_ROOT_WINDOW, true);
-						const wchar_t* text = toolboxWnd->getElementFromId(GUI_ID_X_POS, true)->getText();
+					    toolboxWnd = device->getGUIEnvironment()->getRootGUIElement()->getElementFromId(GUI_ID_DIALOG_ROOT_WINDOW, true);
+						text = toolboxWnd->getElementFromId(GUI_ID_X_POS, true)->getText();
 						
-						int numeric_peek = wcstol(text, NULL, 10); // осуществляет перевод из const wchar_t в int
-						cout << "\n \t "<< numeric_peek << endl;
-						
-						// Model.setPosition(numeric_peek);
+						coord.X = wcstol(text, NULL, 10); // осуществляет перевод из const wchar_t в int
+					
+						Model.getModel()->setPosition(coord);
 						break;
-					//case GUI_ID_Y_POS:
-						//x = ;
-						//node->setPosition(X);
-						//break;
-					//case GUI_ID_Z_POS:
-						//x = ;
-						//node->setPosition(X);
-						//break;
+					case GUI_ID_Y_POS:
+						toolboxWnd = device->getGUIEnvironment()->getRootGUIElement()->getElementFromId(GUI_ID_DIALOG_ROOT_WINDOW, true);
+						text = toolboxWnd->getElementFromId(GUI_ID_Y_POS, true)->getText();
+						
+						coord.Y = wcstol(text, NULL, 10); // осуществляет перевод из const wchar_t в int
+
+						Model.getModel()->setPosition(coord);
+						break;
+					case GUI_ID_Z_POS:
+						toolboxWnd = device->getGUIEnvironment()->getRootGUIElement()->getElementFromId(GUI_ID_DIALOG_ROOT_WINDOW, true);
+						text = toolboxWnd->getElementFromId(GUI_ID_Z_POS, true)->getText();
+						
+						coord.Z = wcstol(text, NULL, 10); // осуществляет перевод из const wchar_t в int						
+
+						Model.getModel()->setPosition(coord);
+						break;
 				}
 
 				Model.updatePosInfo();
