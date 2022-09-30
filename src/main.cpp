@@ -28,8 +28,6 @@ IGUITreeView* SceneTree;
 Model CurrentObject;
 std::vector<Model> Objects;
 
-
-
 ISceneNode* node;
 
 
@@ -58,7 +56,7 @@ public:
 			// int x, y, z;
 			IGUIElement* toolboxWnd;
 			const wchar_t* text;
-			vector3df coord(0, 0, 0);
+			wchar_t* end;
 
 			switch(event.GUIEvent.EventType)
 			{
@@ -90,6 +88,7 @@ public:
 					IGUIFileOpenDialog* dialog = (IGUIFileOpenDialog*)event.GUIEvent.Caller;
 					tmp->LoadModel(core::stringc(dialog->getFileName()).c_str());
 					Objects.push_back(*tmp);
+					// CurrentObject.getModel()->setScale(vector3df(0.2, 1, 1));
 				}
 				break;
 			case EGET_EDITBOX_ENTER:
@@ -98,26 +97,68 @@ public:
 					    toolboxWnd = device->getGUIEnvironment()->getRootGUIElement()->getElementFromId(GUI_ID_DIALOG_ROOT_WINDOW, true);
 						text = toolboxWnd->getElementFromId(GUI_ID_X_POS, true)->getText();
 						
-						coord.X = wcstol(text, NULL, 10); // осуществляет перевод из const wchar_t в int
-					
-						CurrentObject.getModel()->setPosition(coord);
+						 // wcstol осуществляет перевод из const wchar_t в int
+						CurrentObject.getCoord()->X = wcstol(text, NULL, 10); // осуществляет перевод из const wchar_t в int
+						CurrentObject.setCoord(*CurrentObject.getCoord());
 						break;
 					case GUI_ID_Y_POS:
 						toolboxWnd = device->getGUIEnvironment()->getRootGUIElement()->getElementFromId(GUI_ID_DIALOG_ROOT_WINDOW, true);
 						text = toolboxWnd->getElementFromId(GUI_ID_Y_POS, true)->getText();
 						
-						coord.Y = wcstol(text, NULL, 10); // осуществляет перевод из const wchar_t в int
-
-						CurrentObject.getModel()->setPosition(coord);
+						CurrentObject.getCoord()->Y = wcstol(text, NULL, 10); // осуществляет перевод из const wchar_t в int
+						CurrentObject.setCoord(*CurrentObject.getCoord());
 						break;
 					case GUI_ID_Z_POS:
 						toolboxWnd = device->getGUIEnvironment()->getRootGUIElement()->getElementFromId(GUI_ID_DIALOG_ROOT_WINDOW, true);
 						text = toolboxWnd->getElementFromId(GUI_ID_Z_POS, true)->getText();
 						
-						coord.Z = wcstol(text, NULL, 10); // осуществляет перевод из const wchar_t в int						
-
-						CurrentObject.getModel()->setPosition(coord);
+						CurrentObject.getCoord()->Z = wcstol(text, NULL, 10); // осуществляет перевод из const wchar_t в int
+						CurrentObject.setCoord(*CurrentObject.getCoord());
 						break;
+
+					case GUI_ID_X_ROT:
+					    toolboxWnd = device->getGUIEnvironment()->getRootGUIElement()->getElementFromId(GUI_ID_DIALOG_ROOT_WINDOW, true);
+						text = toolboxWnd->getElementFromId(GUI_ID_X_ROT, true)->getText();
+						
+						CurrentObject.getRotation()->X = wcstol(text, NULL, 10); // осуществляет перевод из const wchar_t в int
+						CurrentObject.setRotation(*CurrentObject.getRotation());
+						break;
+					case GUI_ID_Y_ROT:
+					    toolboxWnd = device->getGUIEnvironment()->getRootGUIElement()->getElementFromId(GUI_ID_DIALOG_ROOT_WINDOW, true);
+						text = toolboxWnd->getElementFromId(GUI_ID_Y_ROT, true)->getText();
+						
+						CurrentObject.getRotation()->Y = wcstol(text, NULL, 10); // осуществляет перевод из const wchar_t в int
+						CurrentObject.setRotation(*CurrentObject.getRotation());
+						break;
+					case GUI_ID_Z_ROT:
+						toolboxWnd = device->getGUIEnvironment()->getRootGUIElement()->getElementFromId(GUI_ID_DIALOG_ROOT_WINDOW, true);
+						text = toolboxWnd->getElementFromId(GUI_ID_Z_ROT, true)->getText();
+						
+						CurrentObject.getRotation()->Z = wcstol(text, NULL, 10); // осуществляет перевод из const wchar_t в int
+						CurrentObject.setRotation(*CurrentObject.getRotation());
+					break;
+
+					case GUI_ID_X_SCALE:
+						toolboxWnd = device->getGUIEnvironment()->getRootGUIElement()->getElementFromId(GUI_ID_DIALOG_ROOT_WINDOW, true);
+						text = toolboxWnd->getElementFromId(GUI_ID_X_SCALE, true)->getText();
+						
+						CurrentObject.getScale()->X = wcstof(text, &end); // осуществляет перевод из const wchar_t в float
+						CurrentObject.setScale(*CurrentObject.getScale());
+					break;
+					case GUI_ID_Y_SCALE:
+						toolboxWnd = device->getGUIEnvironment()->getRootGUIElement()->getElementFromId(GUI_ID_DIALOG_ROOT_WINDOW, true);
+						text = toolboxWnd->getElementFromId(GUI_ID_Y_SCALE, true)->getText();
+						
+						CurrentObject.getScale()->Y = wcstof(text, &end); // осуществляет перевод из const wchar_t в float
+						CurrentObject.setScale(*CurrentObject.getScale());
+					break;
+					case GUI_ID_Z_SCALE:
+						toolboxWnd = device->getGUIEnvironment()->getRootGUIElement()->getElementFromId(GUI_ID_DIALOG_ROOT_WINDOW, true);
+						text = toolboxWnd->getElementFromId(GUI_ID_Z_SCALE, true)->getText();
+						
+						CurrentObject.getScale()->Z = wcstof(text, &end); // осуществляет перевод из const wchar_t в float
+						CurrentObject.setScale(*CurrentObject.getScale());
+					break;
 				}
 
 				CurrentObject.updatePosInfo();
@@ -194,7 +235,7 @@ void createToolBox(IrrlichtDevice *device)
 
     // Location (Расположение)
     env->addStaticText(L"Location:", rect<s32>(5,5 + OFFSET ,100,25 + OFFSET), false, false, wnd);
-    env->addEditBox(L"2.0", rect<s32>(x0,5+ OFFSET ,x0 + w,25+ OFFSET ), true, wnd, GUI_ID_X_POS);
+    env->addEditBox(L"1.0", rect<s32>(x0,5+ OFFSET ,x0 + w,25+ OFFSET ), true, wnd, GUI_ID_X_POS);
 
     env->addEditBox(L"1.0", rect<s32>(x0 + w + between, 5 + OFFSET  ,x0 + w + between + w,25 + OFFSET ), true, wnd, GUI_ID_Y_POS);
 
@@ -502,6 +543,7 @@ int main(int argc,char **argv){
 	CurrentObject = Objects[0];
 
 	smgr->addCameraSceneNode(0, vector3df(0,30,-40), vector3df(0,5,0));
+
 
 	createButtonsField(device, driver);
 	createToolBox(device);

@@ -38,33 +38,40 @@ class Model
 {
 private:
 	ISceneNode* _Model = 0;
-    vector3df position; // чтобы задать позицию
+	vector3df Coord;
+	vector3df Rotation;
+	vector3df Scale;
 public:
     Model();
     void LoadModel(const c8* fn);
-	// void setPosition(vector3df newPos);
-	vector3d< int > getPosition();
 	ISceneNode* getModel();
 	void updatePosInfo();
+	vector3df* getCoord();
+	vector3df* getRotation();
+	vector3df* getScale();
+	void setCoord(vector3df NewCoord);
+	void setRotation(vector3df NewRot);
+	void setScale(vector3df NewScale);
 	Model& operator=(const Model& right) {
         //проверка на самоприсваивание
         if (this == &right) {
             return *this;
         }
 		_Model = right._Model;
-		position = right.position;
+		Coord = right.Coord;
+		Rotation = right.Rotation;
+		Scale = right.Scale;
         return *this;
     }
-
-
-	
 
     ~Model();
 };
 
 Model::Model()
 {
-	position = vector3d (0.0f, 0.0f, 0.0f);
+	Coord = vector3df (0, 0, 0);
+	Rotation = vector3df (0, 0, 0);
+	Scale = vector3df (1, 1, 1);
 }
 
 // Функция для загрукзки моделии
@@ -154,14 +161,9 @@ void Model::LoadModel(const c8* fn) {
 
 }
 
-// void Model::setPosition(vector3df newPos){
-// 	_Model->setPosition(vector3df(newPos));
-// }
-
 ISceneNode* Model::getModel() {
 	return _Model;
 }
-
 
 void Model::updatePosInfo()
 {
@@ -184,7 +186,41 @@ void Model::updatePosInfo()
     }
 }
 
+vector3df* Model::getCoord(){
+	return &Coord;
+}
 
+vector3df* Model::getRotation(){
+	return &Rotation;
+}
+
+vector3df* Model::getScale(){
+	return &Scale;
+}
+
+void Model::setCoord(vector3df NewCoord){
+	Coord.X = NewCoord.X;
+	Coord.Y = NewCoord.Y;
+	Coord.Z = NewCoord.Z;
+
+	_Model->setPosition(Coord);
+}
+
+void Model::setRotation(vector3df NewRot){
+	Rotation.X = NewRot.X;
+	Rotation.Y = NewRot.Y;
+	Rotation.Z = NewRot.Z;
+
+	_Model->setRotation(Rotation);
+}
+
+void Model::setScale(vector3df NewScale){
+	Scale.X = NewScale.X;
+	Scale.Y = NewScale.Y;
+	Scale.Z = NewScale.Z;
+
+	_Model->setScale(Scale);
+}
 
 Model::~Model()
 {
