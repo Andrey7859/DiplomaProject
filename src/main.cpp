@@ -36,6 +36,92 @@ ISceneNode* node;
 #define EXPLORER_WINDOW_POS_H ((Height / 2) - (EXPLORER_WINDOW_POS_Y * 2 - OFFSET))
 #define PROPERTIES_WINDOW_POS_H EXPLORER_WINDOW_POS_Y + EXPLORER_WINDOW_POS_H
 
+//Функция выводит элемент загруженный на сцену
+void addSceneTreeItem( ISceneNode * parent, IGUITreeViewNode* nodeParent, IrrlichtDevice *device)
+{
+	IGUITreeViewNode* node;
+	wchar_t msg[128];
+
+	s32 imageIndex;
+	list<ISceneNode*>::ConstIterator it = parent->getChildren().begin();
+	for (; it != parent->getChildren().end(); ++it)
+	{
+		switch ( (*it)->getType () )
+		{
+			case ESNT_Q3SHADER_SCENE_NODE: imageIndex = 0; break;
+			case ESNT_CAMERA: imageIndex = 1; break;
+			case ESNT_EMPTY: imageIndex = 2; break;
+			case ESNT_MESH: imageIndex = 3; break;
+			case ESNT_OCTREE: imageIndex = 3; break;
+			case ESNT_ANIMATED_MESH: imageIndex = 4; break;
+			case ESNT_SKY_BOX: imageIndex = 5; break;
+			case ESNT_BILLBOARD: imageIndex = 6; break;
+			case ESNT_PARTICLE_SYSTEM: imageIndex = 7; break;
+			case ESNT_TEXT: imageIndex = 8; break;
+			default:imageIndex = -1; break;
+		}
+
+		if ( imageIndex < 0 )
+		{
+			swprintf ( msg, 128, L"%hs,%hs", device->getSceneManager()->getSceneNodeTypeName ( (*it)->getType () ),(*it)->getName());
+			cout << "qwe" << endl;
+		}
+		else
+		{
+			swprintf ( msg, 128, L"%hs",(*it)->getName() );
+			// printf("\n\tname: %s\n", (*it)->getName());
+		}
+
+		node = nodeParent->addChildBack( msg, 0, imageIndex ); //Добавляет ребенка в конец списка элеметов родтеля(Список является частью дерева)
+
+		// Отностся к анимированным элементам
+		list<ISceneNodeAnimator*>::ConstIterator ait = (*it)->getAnimators().begin();
+		for (; ait != (*it)->getAnimators().end(); ++ait)
+		{
+			imageIndex = -1;
+			swprintf ( msg, 128, L"%hs", device->getSceneManager()->getAnimatorTypeName ( (*ait)->getType () ));
+
+			switch ( (*ait)->getType() )
+			{
+				case ESNAT_FLY_CIRCLE:
+				case ESNAT_FLY_STRAIGHT:
+				case ESNAT_FOLLOW_SPLINE:
+				case ESNAT_ROTATION:
+				case ESNAT_TEXTURE:
+				case ESNAT_DELETION:
+				case ESNAT_COLLISION_RESPONSE:
+				case ESNAT_CAMERA_FPS:
+				case ESNAT_CAMERA_MAYA:
+				default:
+					break;
+			}
+			node->addChildBack( msg, 0, imageIndex );
+		}
+
+		addSceneTreeItem ( *it, node, device);
+	}
+}
+
+//Создание подокна отображеия на сцене Scene Explorer
+void addSceneExplorerTree(IGUITab* t1, IrrlichtDevice *device){	
+
+    SceneTree = device->getGUIEnvironment()->addTreeView(rect<s32>( 0, OFFSET, 300, PROPERTIES_WINDOW_POS_H ), t1, -1, true, true, false );
+    SceneTree->setToolTipText ( L"Show the current Scenegraph" );
+    SceneTree->getRoot()->clearChildren();
+    addSceneTreeItem (device->getSceneManager()->getRootSceneNode(), SceneTree->getRoot(), device);
+
+	IGUIImageList* imageList = device->getGUIEnvironment()->createImageList(device->getVideoDriver()->getTexture ( "../media/iconlist.png" ), dimension2di( 32, 32 ), true );
+
+    if ( imageList ){
+        SceneTree->setImageList( imageList );
+        imageList->drop ();
+    }
+
+}
+
+
+
+
 // Создаем класс для отлавливания обработки всех событий
 class MyEventReceiver : public IEventReceiver
 {
@@ -88,7 +174,8 @@ public:
 					IGUIFileOpenDialog* dialog = (IGUIFileOpenDialog*)event.GUIEvent.Caller;
 					tmp->LoadModel(core::stringc(dialog->getFileName()).c_str());
 					Objects.push_back(*tmp);
-					// CurrentObject.getModel()->setScale(vector3df(0.2, 1, 1));
+					SceneTree->getRoot()->clearChildren();
+					addSceneTreeItem(device->getSceneManager()->getRootSceneNode(), SceneTree->getRoot(), device);
 				}
 				break;
 			case EGET_EDITBOX_ENTER:
@@ -266,6 +353,15 @@ typedef struct filesListStruct {
 	int type;
 } filesList;
 
+
+
+
+
+
+
+
+
+
 //Функция выводит количество файлов в директории (Нужна для подсчета точного количесво выделяемой оперативной памяти)
 int filesCounter(std::string path) {
 	DIR *dir;
@@ -286,6 +382,7 @@ int filesCounter(std::string path) {
 
 	return filesListSize;
 }
+
 // Заполняет массив структур файлами и папками и выводит кол-во файлов в директории
 int scaner(filesList filesList[BUFSIZE], std::string path){
 	DIR *dir;
@@ -308,71 +405,6 @@ int scaner(filesList filesList[BUFSIZE], std::string path){
 	return filesListSize;
 }
 
-//Функция выводит элемент загруженный на сцену
-void addSceneTreeItem( ISceneNode * parent, IGUITreeViewNode* nodeParent, IrrlichtDevice *device)
-{
-	IGUITreeViewNode* node;
-	wchar_t msg[128];
-
-	s32 imageIndex;
-	list<ISceneNode*>::ConstIterator it = parent->getChildren().begin();
-	for (; it != parent->getChildren().end(); ++it)
-	{
-		switch ( (*it)->getType () )
-		{
-			case ESNT_Q3SHADER_SCENE_NODE: imageIndex = 0; break;
-			case ESNT_CAMERA: imageIndex = 1; break;
-			case ESNT_EMPTY: imageIndex = 2; break;
-			case ESNT_MESH: imageIndex = 3; break;
-			case ESNT_OCTREE: imageIndex = 3; break;
-			case ESNT_ANIMATED_MESH: imageIndex = 4; break;
-			case ESNT_SKY_BOX: imageIndex = 5; break;
-			case ESNT_BILLBOARD: imageIndex = 6; break;
-			case ESNT_PARTICLE_SYSTEM: imageIndex = 7; break;
-			case ESNT_TEXT: imageIndex = 8; break;
-			default:imageIndex = -1; break;
-		}
-
-		if ( imageIndex < 0 )
-		{
-			swprintf ( msg, 128, L"%hs,%hs", device->getSceneManager()->getSceneNodeTypeName ( (*it)->getType () ),(*it)->getName());
-			cout << "qwe" << endl;
-		}
-		else
-		{
-			swprintf ( msg, 128, L"%hs",(*it)->getName() );
-			// printf("\n\tname: %s\n", (*it)->getName());
-		}
-
-		node = nodeParent->addChildBack( msg, 0, imageIndex ); //Добавляет ребенка в конец списка элеметов родтеля(Список является частью дерева)
-
-		// Отностся к анимированным элементам
-		list<ISceneNodeAnimator*>::ConstIterator ait = (*it)->getAnimators().begin();
-		for (; ait != (*it)->getAnimators().end(); ++ait)
-		{
-			imageIndex = -1;
-			swprintf ( msg, 128, L"%hs", device->getSceneManager()->getAnimatorTypeName ( (*ait)->getType () ));
-
-			switch ( (*ait)->getType() )
-			{
-				case ESNAT_FLY_CIRCLE:
-				case ESNAT_FLY_STRAIGHT:
-				case ESNAT_FOLLOW_SPLINE:
-				case ESNAT_ROTATION:
-				case ESNAT_TEXTURE:
-				case ESNAT_DELETION:
-				case ESNAT_COLLISION_RESPONSE:
-				case ESNAT_CAMERA_FPS:
-				case ESNAT_CAMERA_MAYA:
-				default:
-					break;
-			}
-			node->addChildBack( msg, 0, imageIndex );
-		}
-
-		addSceneTreeItem ( *it, node, device);
-	}
-}
 //Данная функция позволяет повторно сканировать директории по которым проходимся
 void addContentBrowserTreeItem(IGUITreeViewNode* nodeParent, std::string path){
 	int counter = filesCounter(path); // Число файлов в директории
@@ -409,22 +441,14 @@ void addContentBrowserTree(IGUITab* t2, IrrlichtDevice *device) {
     // }
 }
 
-//Создание подокна отображеия на сцене Scene Explorer
-void addSceneExplorerTree(IGUITab* t1, IrrlichtDevice *device){	
 
-    SceneTree = device->getGUIEnvironment()->addTreeView(rect<s32>( 0, OFFSET, 300, PROPERTIES_WINDOW_POS_H ), t1, -1, true, true, false );
-    SceneTree->setToolTipText ( L"Show the current Scenegraph" );
-    SceneTree->getRoot()->clearChildren();
-    addSceneTreeItem (device->getSceneManager()->getRootSceneNode(), SceneTree->getRoot(), device);
 
-	IGUIImageList* imageList = device->getGUIEnvironment()->createImageList(device->getVideoDriver()->getTexture ( "../media/iconlist.png" ), dimension2di( 32, 32 ), true );
 
-    if ( imageList ){
-        SceneTree->setImageList( imageList );
-        imageList->drop ();
-    }
 
-}
+
+
+
+
 
 //Создание окна Explorer 
 void createExplorer(IrrlichtDevice *device)
@@ -445,10 +469,10 @@ void createExplorer(IrrlichtDevice *device)
         rect<s32>(0, OFFSET, 300, PROPERTIES_WINDOW_POS_H - (3 * OFFSET)), wnd, true, true);
 
     IGUITab* t1 = tab->addTab(L"Scene explorer");
-	addSceneExplorerTree(t1, device);
+	addSceneExplorerTree(t1, device);					// Объекты на сцене 
 
     IGUITab* t2 = tab->addTab(L"Content browser");
-	addContentBrowserTree(t2, device);
+	addContentBrowserTree(t2, device);					// Список файлов в папке проекта
 
     //Model.updatePosInfo(Model);
 }
