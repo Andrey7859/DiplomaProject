@@ -63,7 +63,7 @@ public:
 		Scale = right.Scale;
         return *this;
     }
-
+	
     ~Model();
 };
 

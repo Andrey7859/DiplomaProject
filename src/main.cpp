@@ -15,10 +15,6 @@ int Height;
 #pragma comment(linker, "/subsystem:windows /ENTRY:mainCRTStartup")
 #endif
 
-struct SAppContext
-{
-	IrrlichtDevice *device;
-};
 
 const wchar_t* _path;
 char buffer[BUFSIZE];
@@ -37,7 +33,7 @@ ISceneNode* node;
 #define PROPERTIES_WINDOW_POS_H EXPLORER_WINDOW_POS_Y + EXPLORER_WINDOW_POS_H
 
 //Функция выводит элемент загруженный на сцену
-void addSceneTreeItem( ISceneNode * parent, IGUITreeViewNode* nodeParent, IrrlichtDevice *device)
+void addSceneTreeItem( ISceneNode * parent, IGUITreeViewNode* nodeParent)
 {
 	IGUITreeViewNode* node;
 	wchar_t msg[128];
@@ -98,17 +94,17 @@ void addSceneTreeItem( ISceneNode * parent, IGUITreeViewNode* nodeParent, Irrlic
 			node->addChildBack( msg, 0, imageIndex );
 		}
 
-		addSceneTreeItem ( *it, node, device);
+		addSceneTreeItem ( *it, node);
 	}
 }
 
 //Создание подокна отображеия на сцене Scene Explorer
-void addSceneExplorerTree(IGUITab* t1, IrrlichtDevice *device){	
+void addSceneExplorerTree(IGUITab* t1){	
 
     SceneTree = device->getGUIEnvironment()->addTreeView(rect<s32>( 0, OFFSET, 300, PROPERTIES_WINDOW_POS_H ), t1, -1, true, true, false );
     SceneTree->setToolTipText ( L"Show the current Scenegraph" );
     SceneTree->getRoot()->clearChildren();
-    addSceneTreeItem (device->getSceneManager()->getRootSceneNode(), SceneTree->getRoot(), device);
+    addSceneTreeItem (device->getSceneManager()->getRootSceneNode(), SceneTree->getRoot());
 
 	IGUIImageList* imageList = device->getGUIEnvironment()->createImageList(device->getVideoDriver()->getTexture ( "../media/iconlist.png" ), dimension2di( 32, 32 ), true );
 
@@ -125,18 +121,16 @@ void addSceneExplorerTree(IGUITab* t1, IrrlichtDevice *device){
 // Создаем класс для отлавливания обработки всех событий
 class MyEventReceiver : public IEventReceiver
 {
-private:
-	SAppContext & Context;
 
 public:
-	MyEventReceiver(SAppContext & context) : Context(context) { }
+	MyEventReceiver()  { }
 
 	virtual bool OnEvent(const SEvent& event)
 	{
 		if (event.EventType == EET_GUI_EVENT)		// Оставляем события относящиеся к приложению интерфейса
 		{
 			s32 id = event.GUIEvent.Caller->getID();
-			IGUIEnvironment* env = Context.device->getGUIEnvironment(); //Это окружение графического интерфейса пользователя(Список виджетов ползунков
+			IGUIEnvironment* env = device->getGUIEnvironment(); //Это окружение графического интерфейса пользователя(Список виджетов ползунков
 																		//которые харнятся в движке)
 
 			// int x, y, z;
@@ -146,6 +140,26 @@ public:
 
 			switch(event.GUIEvent.EventType)
 			{
+			case EGET_TREEVIEW_NODE_SELECT:
+				{
+					// ISceneNode* tmp = (ISceneNode*) SceneTree->getSelected();
+					ISceneNode* tmp = (ISceneNode*) SceneTree->getSelected();
+
+					for (int i = 0; i < Objects.size(); i++) {
+						// cout << tmp.getPosition().X << endl;
+						// if (Objects[i].getCoord()->X == tmp->getPosition().X){
+						// 	if (Objects[i].getCoord()->Y == tmp->getPosition().Y){
+						// 		if (Objects[i].getCoord()->Z == tmp->getPosition().Z){
+									// CurrentObject = Objects[i];
+						// 		}
+						// 	}
+						// }
+					}
+					
+					
+					// cout << "\t\tid: " << tmp->getID() << endl;
+				}
+				break;
 
 			case EGET_BUTTON_CLICKED:
 				switch(id)
@@ -159,10 +173,10 @@ public:
 					}
 					return true;
 
-				case GUI_ID_ADD_BUTTON:
+				case GUI_ID_ADD_BUTTON:{
 					env->addFileOpenDialog(L"Please choose a file.", true, 0, -1, true);
 					return true;
-
+				}
 				default:
 					return false;
 				}
@@ -175,7 +189,11 @@ public:
 					tmp->LoadModel(core::stringc(dialog->getFileName()).c_str());
 					Objects.push_back(*tmp);
 					SceneTree->getRoot()->clearChildren();
-					addSceneTreeItem(device->getSceneManager()->getRootSceneNode(), SceneTree->getRoot(), device);
+					addSceneTreeItem(device->getSceneManager()->getRootSceneNode(), SceneTree->getRoot());
+
+
+
+
 				}
 				break;
 			case EGET_EDITBOX_ENTER:
@@ -260,44 +278,67 @@ public:
 
 //Функция создание поля кнопок
 
-void createButtonsField(IrrlichtDevice *device, IVideoDriver* driver){
-    IGUIEnvironment* env = device->getGUIEnvironment();
+void createButtonsField(IVideoDriver* driver){
+	IGUIEnvironment* env = device->getGUIEnvironment();
     IGUIElement* root = env->getRootGUIElement();
     IGUIElement* e = root->getElementFromId(GUI_ID_DIALOG_ROOT_2_WINDOW, true);
-    
+
+
+
 	if (e)
         e->remove();
 
     // Создание верхней панели для кнопок
     IGUIWindow* wnd = env->addWindow(rect<s32>(0, OFFSET, Width, BUTTON_SIZE + (OFFSET * 2)), false, L"qwer", 0, GUI_ID_DIALOG_ROOT_2_WINDOW);
-	// wnd->setDraggable(false);
 	wnd->setDrawTitlebar(false);
 
-	// Создане кнопок
-	env->addButton(rect<s32>(OFFSET, OFFSET / 2, BUTTON_SIZE + OFFSET, BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_ADD_BUTTON, L"ADD", L"Add Fille");
-	env->addButton(rect<s32>((OFFSET * 2) + BUTTON_SIZE, OFFSET / 2, (BUTTON_SIZE + OFFSET) * 2, BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_SAVE_BUTTON, L"SAVE", L"Save project");
-	env->addButton(rect<s32>((OFFSET * 3) + (BUTTON_SIZE * 2), OFFSET / 2, (BUTTON_SIZE + OFFSET) * 3, BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_DELETE_BUTTON, L"DELETE", L"Deletes the selected element");
-
-	env->addButton(rect<s32>((OFFSET * 5) + (BUTTON_SIZE * 3), OFFSET / 2, (BUTTON_SIZE * 4) + (OFFSET * 5), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_SELECT_BUTTON, L"SELECT", L"Object selection");
-	env->addButton(rect<s32>((OFFSET * 6) + (BUTTON_SIZE * 4), OFFSET / 2, (BUTTON_SIZE * 5) + (OFFSET * 6), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_BRUSH_BUTTON, L"BRUSH", L"Exits Program");
-	env->addButton(rect<s32>((OFFSET * 7) + (BUTTON_SIZE * 5), OFFSET / 2, (BUTTON_SIZE * 6) + (OFFSET * 7), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_MOVE_BUTTON, L"MOVE", L"Moving an object");
-
-	env->addButton(rect<s32>((OFFSET * 9) + (BUTTON_SIZE * 6), OFFSET / 2, (BUTTON_SIZE * 7) + (OFFSET * 9), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_PERSPECTIVE_BUTTON, L"PERSPECTIVE", L"Displaying the scene in the projection window as a perspective.");
-	env->addButton(rect<s32>((OFFSET * 10) + (BUTTON_SIZE * 7), OFFSET / 2, (BUTTON_SIZE * 8) + (OFFSET * 10), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_TOP_BUTTON, L"TOP", L"View from above");
-	env->addButton(rect<s32>((OFFSET * 11) + (BUTTON_SIZE * 8), OFFSET / 2, (BUTTON_SIZE * 9) + (OFFSET * 11), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_FRONT_BUTTON, L"FRONT", L"Front view");
-	env->addButton(rect<s32>((OFFSET * 12) + (BUTTON_SIZE * 9), OFFSET / 2, (BUTTON_SIZE * 10) + (OFFSET * 12), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_LEFT_BUTTON, L"LEFT", L"Left side view");
-	env->addButton(rect<s32>((OFFSET * 13) + (BUTTON_SIZE * 10), OFFSET / 2, (BUTTON_SIZE * 11) + (OFFSET * 13), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_ASK_BUTTON, L"SPLIT", L"Exits Program");
-
-	env->addButton(rect<s32>((OFFSET * 15) + (BUTTON_SIZE * 11), OFFSET / 2, (BUTTON_SIZE * 12) + (OFFSET * 15), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_SIMPLE_BUTTON, L"EDIT", L"Exits Program");
-	env->addButton(rect<s32>((OFFSET * 16) + (BUTTON_SIZE * 12), OFFSET / 2, (BUTTON_SIZE * 13) + (OFFSET * 16), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_BBOX_BUTTON, L"BBoX", L"Exits Program");
-	env->addButton(rect<s32>((OFFSET * 17) + (BUTTON_SIZE * 13), OFFSET / 2, (BUTTON_SIZE * 14) + (OFFSET * 17), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_WIREFRAME_BUTTON, L"WIREFRAME", L"Exits Program");
+	IGUIButton* addButton = env->addButton(rect<s32>(OFFSET, OFFSET / 2, BUTTON_SIZE + OFFSET, BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_ADD_BUTTON, L" ",L"Add object");
+	addButton->setImage(driver->getTexture("../media/icon/add.jpg"));
 	
-	/*driver->draw2DLine(position2d<s32>( 300, 300 ), Попытка сделать сепаратор
-	 position2d<s32>( 600, 600) ,
-	  SColor(255,0,0,255));*/
+	IGUIButton* saveButton = env->addButton(rect<s32>((OFFSET * 2) + BUTTON_SIZE, OFFSET / 2, (BUTTON_SIZE + OFFSET) * 2, BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_SAVE_BUTTON, L" ", L"Save project");
+	saveButton->setImage(driver->getTexture("../media/icon/save.jpg"));
+
+	IGUIButton* deleteButton = env->addButton(rect<s32>((OFFSET * 3) + (BUTTON_SIZE * 2), OFFSET / 2, (BUTTON_SIZE + OFFSET) * 3, BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_DELETE_BUTTON, L" ", L"Delete project");
+	deleteButton->setImage(driver->getTexture("../media/icon/delete.jpg"));
+
+	IGUIButton* selectButton = env->addButton(rect<s32>((OFFSET * 5) + (BUTTON_SIZE * 3), OFFSET / 2, (BUTTON_SIZE * 4) + (OFFSET * 5), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_SELECT_BUTTON, L" ", L"Select object");
+	selectButton->setImage(driver->getTexture("../media/icon/select.jpg"));
+
+	IGUIButton* moveButton = env->addButton(rect<s32>((OFFSET * 6) + (BUTTON_SIZE * 4), OFFSET / 2, (BUTTON_SIZE * 5) + (OFFSET * 6), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_BRUSH_BUTTON, L"", L"Move object");
+	moveButton->setImage(driver->getTexture("../media/icon/move.jpg"));
+
+	// Под кисть
+	// env->addButton(rect<s32>((OFFSET * 7) + (BUTTON_SIZE * 5), OFFSET / 2, (BUTTON_SIZE * 6) + (OFFSET * 7), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_MOVE_BUTTON, L"MOVE", L"Moving an object");
+	
+	IGUIButton* perspectiveButton = env->addButton(rect<s32>((OFFSET * 9) + (BUTTON_SIZE * 6), OFFSET / 2, (BUTTON_SIZE * 7) + (OFFSET * 9), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_PERSPECTIVE_BUTTON, L" ", L"Perspective view");
+	perspectiveButton->setImage(driver->getTexture("../media/icon/perspective.jpg"));
+
+	IGUIButton* topButton = env->addButton(rect<s32>((OFFSET * 10) + (BUTTON_SIZE * 7), OFFSET / 2, (BUTTON_SIZE * 8) + (OFFSET * 10), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_TOP_BUTTON, L" ", L"Top view");
+	topButton->setImage(driver->getTexture("../media/icon/top.jpg"));
+
+	IGUIButton* frontButton = env->addButton(rect<s32>((OFFSET * 11) + (BUTTON_SIZE * 8), OFFSET / 2, (BUTTON_SIZE * 9) + (OFFSET * 11), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_FRONT_BUTTON, L" ", L"Front view");
+	frontButton->setImage(driver->getTexture("../media/icon/front.jpg"));
+	
+	IGUIButton* leftButton = env->addButton(rect<s32>((OFFSET * 12) + (BUTTON_SIZE * 9), OFFSET / 2, (BUTTON_SIZE * 10) + (OFFSET * 12), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_LEFT_BUTTON, L" ", L"Left view");
+	leftButton->setImage(driver->getTexture("../media/icon/left.jpg"));
+
+	IGUIButton* splitButton = env->addButton(rect<s32>((OFFSET * 13) + (BUTTON_SIZE * 10), OFFSET / 2, (BUTTON_SIZE * 11) + (OFFSET * 13), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_ASK_BUTTON, L" ", L"Split view");
+	splitButton->setImage(driver->getTexture("../media/icon/split.png"));
+
+	IGUIButton* simpleButton = env->addButton(rect<s32>((OFFSET * 15) + (BUTTON_SIZE * 11), OFFSET / 2, (BUTTON_SIZE * 12) + (OFFSET * 15), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_SIMPLE_BUTTON, L" ", L"Solid");
+	simpleButton->setImage(driver->getTexture("../media/icon/simple.jpg"));
+
+	IGUIButton* bboxButton = env->addButton(rect<s32>((OFFSET * 16) + (BUTTON_SIZE * 12), OFFSET / 2, (BUTTON_SIZE * 13) + (OFFSET * 16), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_BBOX_BUTTON, L" ", L"Bounding Box");
+	bboxButton->setImage(driver->getTexture("../media/icon/bbox.png"));
+
+	IGUIButton* wireFrameButton = env->addButton(rect<s32>((OFFSET * 17) + (BUTTON_SIZE * 13), OFFSET / 2, (BUTTON_SIZE * 14) + (OFFSET * 17), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_WIREFRAME_BUTTON, L" ", L"Wire Frame");
+	wireFrameButton->setImage(driver->getTexture("../media/icon/wireFrame.jpg"));
+
 }
+
+
 // Функция созданя Toolset -> Properties
-void createToolBox(IrrlichtDevice *device)
+void createToolBox()
 {
     IGUIEnvironment* env = device->getGUIEnvironment();
     IGUIElement* root = env->getRootGUIElement();
@@ -425,7 +466,7 @@ void addContentBrowserTreeItem(IGUITreeViewNode* nodeParent, std::string path){
 }
 
 //Создание подокна отображеия на сцене Contetnt Browser 
-void addContentBrowserTree(IGUITab* t2, IrrlichtDevice *device) {
+void addContentBrowserTree(IGUITab* t2) {
 	IGUITreeView* SceneTree;
 
     SceneTree = device->getGUIEnvironment()->addTreeView(rect<s32>( 0, OFFSET, 300, PROPERTIES_WINDOW_POS_H ), t2, -1, true, true, false );
@@ -446,12 +487,8 @@ void addContentBrowserTree(IGUITab* t2, IrrlichtDevice *device) {
 
 
 
-
-
-
-
 //Создание окна Explorer 
-void createExplorer(IrrlichtDevice *device)
+void createExplorer()
 {
     IGUIEnvironment* env = device->getGUIEnvironment();
     IGUIElement* root = env->getRootGUIElement();
@@ -469,10 +506,10 @@ void createExplorer(IrrlichtDevice *device)
         rect<s32>(0, OFFSET, 300, PROPERTIES_WINDOW_POS_H - (3 * OFFSET)), wnd, true, true);
 
     IGUITab* t1 = tab->addTab(L"Scene explorer");
-	addSceneExplorerTree(t1, device);					// Объекты на сцене 
+	addSceneExplorerTree(t1);					// Объекты на сцене 
 
     IGUITab* t2 = tab->addTab(L"Content browser");
-	addContentBrowserTree(t2, device);					// Список файлов в папке проекта
+	addContentBrowserTree(t2);					// Список файлов в папке проекта
 
     //Model.updatePosInfo(Model);
 }
@@ -491,7 +528,7 @@ int main(int argc,char **argv){
 	/*
 	Обратите внимание, что перед строкой стоит буква «L». Irrlicht Engine использует широкие строки символов при отображении текста.
 	*/
-	device->setWindowCaption(L"Hello World! - Irrlicht Engine Demo");
+	device->setWindowCaption(L"Level Editor");
 	// device->setResizable(true);
 
 	//IGUITreeViewNode * select = SceneTree->getSelected(); //Получение выбраного из дерева
@@ -556,26 +593,26 @@ int main(int argc,char **argv){
 	submenu = menu->getSubMenu(3);
 	submenu->addItem(L"About", GUI_ID_ABOUT);
 
-	//
-	SAppContext context;
-	context.device = device;
 	 
+	smgr->addCameraSceneNode(0, vector3df(0,30,-40), vector3df(0,5,0));
+	
 	// Model.LoadModel(StartUpModelFile.c_str());
 	Model* tmp = new Model;
 	tmp->LoadModel(StartUpModelFile.c_str());
 	Objects.push_back(*tmp);
 	CurrentObject = Objects[0];
 
-	smgr->addCameraSceneNode(0, vector3df(0,30,-40), vector3df(0,5,0));
 
 
-	createButtonsField(device, driver);
-	createToolBox(device);
-	createExplorer(device);
+
+
+	createButtonsField(driver);
+	createToolBox();
+	createExplorer();
 	
 	// Создаем объект receiver на основе класса MyEventReceiver. Передаем структуру Context
 					//Накопитель
-	MyEventReceiver receiver(context);
+	MyEventReceiver receiver;
 
 	// And tell the device to use our custom event receiver.
 	device->setEventReceiver(&receiver);
