@@ -5,9 +5,16 @@
 #include <GL/glu.h>
 #include <GL/glut.h>
 #include <string>
+#include <string.h>
 #include <iostream>
 #include <dirent.h>
 #include <vector>
+#include <map>
+#include <string_view>
+#include <stdlib.h>
+#include <unistd.h>
+#include <stdio.h>
+
 
 using namespace std;
 
@@ -25,6 +32,7 @@ using namespace gui;
 #define BUFSIZE 255
 
 IrrlichtDevice *device;
+IGUITreeView* SceneTree;
 
 // Определяем значения, которые мы будем использовать для идентификации отдельных элементов управления GUI.
 enum 
@@ -102,3 +110,48 @@ enum
 	GUI_ID_ABOUT
 	
 };
+
+IGUITreeViewNode* treeTraversal(IGUITreeViewNode* root) {
+	
+}
+
+//Хэш таблица
+std::map<std::string, int> m{{"Q3Shader", 0}, {"Camera", 0}, 
+{"Empty", 0},{"MESH", 0}, {"OCTREE", 0}, {"AnimMesh", 0},
+{"SKY_BOX", 0}, {"BILLBOARD", 0}, {"PARTICLE_SYSTEM", 0}, {"TEXT", 0}};
+	
+
+const c8* objectRename(c8* name, ISceneNode* node){
+	// IGUITreeViewNode* root =  SceneTree->getRoot();
+	cout << "\n\t" << node->getName() << endl;
+
+	char* name_split = strtok(name, "_");
+
+	if( ! strcmp(name_split, node->getName())) { // Если уже существует такой объект
+	if(! strcmp(node->
+	// cout << "\n\tname_split:  " << name_split << endl;
+
+		if(m[name_split] > 0){
+			char* tmp = (char*) malloc(strlen(name_split)+3); // Выделение памяти через malloc 
+			snprintf(tmp, strlen(name_split)+3, "%s_%d", name_split, m[name_split]); // конкатанация
+
+			m[name_split]++;
+			// cout << "\n\t" << name << "  " << m[name] << endl;
+
+
+			return tmp;
+		}
+	}
+	if ( ! strcmp(node->getName(), "")){  // Есть, но не имеет имени
+		m[name_split]++;
+		return name;
+	}
+	node->getChildren().getLast()
+	else {								// Если такого объекта нет
+		return node->getName();
+	}
+
+
+
+
+}

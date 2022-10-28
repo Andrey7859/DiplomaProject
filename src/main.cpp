@@ -20,7 +20,6 @@ const wchar_t* _path;
 char buffer[BUFSIZE];
 int ret;
 ISceneNode** selectedModel;
-IGUITreeView* SceneTree;
 Model CurrentObject;
 std::vector<Model> Objects;
 
@@ -44,12 +43,12 @@ void addSceneTreeItem( ISceneNode * parent, IGUITreeViewNode* nodeParent)
 	{
 		switch ( (*it)->getType () )
 		{
-			case ESNT_Q3SHADER_SCENE_NODE: imageIndex = 0; break;
-			case ESNT_CAMERA: imageIndex = 1; break;
-			case ESNT_EMPTY: imageIndex = 2; break;
-			case ESNT_MESH: imageIndex = 3; break;
+			case ESNT_Q3SHADER_SCENE_NODE: imageIndex = 0;  (*it)->setName(objectRename("Q3Shader", *it)); break;
+			case ESNT_CAMERA: imageIndex = 1; (*it)->setName(objectRename("Camera", *it)); break;
+			case ESNT_EMPTY: imageIndex = 2; (*it)->setName(objectRename("Empty", *it)); break;
+			case ESNT_MESH: imageIndex = 3; (*it)->setName(objectRename("Mesh", *it)); break;
 			case ESNT_OCTREE: imageIndex = 3; break;
-			case ESNT_ANIMATED_MESH: imageIndex = 4; break;
+			case ESNT_ANIMATED_MESH: imageIndex = 4; (*it)->setName(objectRename("AnimMesh", *it)); break;
 			case ESNT_SKY_BOX: imageIndex = 5; break;
 			case ESNT_BILLBOARD: imageIndex = 6; break;
 			case ESNT_PARTICLE_SYSTEM: imageIndex = 7; break;
@@ -594,8 +593,9 @@ int main(int argc,char **argv){
 	submenu->addItem(L"About", GUI_ID_ABOUT);
 
 	 
-	smgr->addCameraSceneNode(0, vector3df(0,30,-40), vector3df(0,5,0));
-	
+	ICameraSceneNode* camera = smgr->addCameraSceneNode(0, vector3df(0,30,-40), vector3df(0,5,0));
+	camera->setName("Camera");
+
 	// Model.LoadModel(StartUpModelFile.c_str());
 	Model* tmp = new Model;
 	tmp->LoadModel(StartUpModelFile.c_str());
