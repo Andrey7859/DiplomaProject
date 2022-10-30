@@ -30,71 +30,78 @@ ISceneNode* node;
 #define EXPLORER_WINDOW_POS_Y BUTTON_SIZE + (OFFSET * 2)// 
 #define EXPLORER_WINDOW_POS_H ((Height / 2) - (EXPLORER_WINDOW_POS_Y * 2 - OFFSET))
 #define PROPERTIES_WINDOW_POS_H EXPLORER_WINDOW_POS_Y + EXPLORER_WINDOW_POS_H
+	int itemCounter = 1;	
 
 //Функция выводит элемент загруженный на сцену
-void addSceneTreeItem( ISceneNode * parent, IGUITreeViewNode* nodeParent)
-{
+void addSceneTreeItem( ISceneNode * parent, IGUITreeViewNode* nodeParent){
+
 	IGUITreeViewNode* node;
 	wchar_t msg[128];
+	
 
 	s32 imageIndex;
 	list<ISceneNode*>::ConstIterator it = parent->getChildren().begin();
-	for (; it != parent->getChildren().end(); ++it)
-	{
+	
+	for (; it != parent->getChildren().end(); ++it){
+	
 		switch ( (*it)->getType () )
 		{
-			case ESNT_Q3SHADER_SCENE_NODE: imageIndex = 0;  (*it)->setName(objectRename("Q3Shader", *it)); break;
-			case ESNT_CAMERA: imageIndex = 1; (*it)->setName(objectRename("Camera", *it)); break;
-			case ESNT_EMPTY: imageIndex = 2; (*it)->setName(objectRename("Empty", *it)); break;
-			case ESNT_MESH: imageIndex = 3; (*it)->setName(objectRename("Mesh", *it)); break;
-			case ESNT_OCTREE: imageIndex = 3; break;
-			case ESNT_ANIMATED_MESH: imageIndex = 4; (*it)->setName(objectRename("AnimMesh", *it)); break;
-			case ESNT_SKY_BOX: imageIndex = 5; break;
-			case ESNT_BILLBOARD: imageIndex = 6; break;
-			case ESNT_PARTICLE_SYSTEM: imageIndex = 7; break;
-			case ESNT_TEXT: imageIndex = 8; break;
+			case ESNT_Q3SHADER_SCENE_NODE: imageIndex = 0; (*it)->setName("Q3Shader"); break;
+			case ESNT_CAMERA: imageIndex = 1; (*it)->setName("Camera"); break;
+			case ESNT_EMPTY: imageIndex = 2; (*it)->setName("Empty"); break;
+			case ESNT_MESH: imageIndex = 3; (*it)->setName("Mesh"); break;
+			case ESNT_OCTREE: imageIndex = 3; (*it)->setName("Octree"); break;
+			case ESNT_ANIMATED_MESH: imageIndex = 4; (*it)->setName("AninMesh"); break;
+			case ESNT_SKY_BOX: imageIndex = 5; (*it)->setName("Skybox"); break;
+			case ESNT_BILLBOARD: imageIndex = 6; (*it)->setName("Billboard"); break;
+			case ESNT_PARTICLE_SYSTEM: imageIndex = 7; (*it)->setName("Particle_System"); break;
+			case ESNT_TEXT: imageIndex = 8; (*it)->setName("Text"); break;
 			default:imageIndex = -1; break;
 		}
 
 		if ( imageIndex < 0 )
 		{
-			swprintf ( msg, 128, L"%hs,%hs", device->getSceneManager()->getSceneNodeTypeName ( (*it)->getType () ),(*it)->getName());
-			cout << "qwe" << endl;
+			swprintf ( msg, 128, L"%hs,%hs_%d", device->getSceneManager()->getSceneNodeTypeName ( (*it)->getType () ),(*it)->getName(), itemCounter);
 		}
 		else
 		{
-			swprintf ( msg, 128, L"%hs",(*it)->getName() );
+			swprintf ( msg, 128, L"%hs_%d",(*it)->getName(), itemCounter);
 			// printf("\n\tname: %s\n", (*it)->getName());
 		}
-
+		
+		// cout << "\n\tname_split:  " << (*it)->getName() << endl;
 		node = nodeParent->addChildBack( msg, 0, imageIndex ); //Добавляет ребенка в конец списка элеметов родтеля(Список является частью дерева)
+		
 
 		// Отностся к анимированным элементам
-		list<ISceneNodeAnimator*>::ConstIterator ait = (*it)->getAnimators().begin();
-		for (; ait != (*it)->getAnimators().end(); ++ait)
-		{
-			imageIndex = -1;
-			swprintf ( msg, 128, L"%hs", device->getSceneManager()->getAnimatorTypeName ( (*ait)->getType () ));
+		// list<ISceneNodeAnimator*>::ConstIterator ait = (*it)->getAnimators().begin();
+		// for (; ait != (*it)->getAnimators().end(); ++ait)
+		// {
+		// 	imageIndex = -1;
+		// 	swprintf ( msg, 128, L"%hs", device->getSceneManager()->getAnimatorTypeName ( (*ait)->getType () ));
 
-			switch ( (*ait)->getType() )
-			{
-				case ESNAT_FLY_CIRCLE:
-				case ESNAT_FLY_STRAIGHT:
-				case ESNAT_FOLLOW_SPLINE:
-				case ESNAT_ROTATION:
-				case ESNAT_TEXTURE:
-				case ESNAT_DELETION:
-				case ESNAT_COLLISION_RESPONSE:
-				case ESNAT_CAMERA_FPS:
-				case ESNAT_CAMERA_MAYA:
-				default:
-					break;
-			}
-			node->addChildBack( msg, 0, imageIndex );
-		}
+		// 	switch ( (*ait)->getType() )
+		// 	{
+		// 		case ESNAT_FLY_CIRCLE:
+		// 		case ESNAT_FLY_STRAIGHT:
+		// 		case ESNAT_FOLLOW_SPLINE:
+		// 		case ESNAT_ROTATION:
+		// 		case ESNAT_TEXTURE:
+		// 		case ESNAT_DELETION:
+		// 		case ESNAT_COLLISION_RESPONSE:
+		// 		case ESNAT_CAMERA_FPS:
+		// 		case ESNAT_CAMERA_MAYA:
+		// 		default:
+		// 			break;
+		// 	}
+		// 	node->addChildBack( msg, 0, imageIndex );
+		// }
 
 		addSceneTreeItem ( *it, node);
 	}
+	itemCounter++;
+	// cout << "\t ItemCounter    " << itemCounter << endl;
+
 }
 
 //Создание подокна отображеия на сцене Scene Explorer
@@ -103,6 +110,7 @@ void addSceneExplorerTree(IGUITab* t1){
     SceneTree = device->getGUIEnvironment()->addTreeView(rect<s32>( 0, OFFSET, 300, PROPERTIES_WINDOW_POS_H ), t1, -1, true, true, false );
     SceneTree->setToolTipText ( L"Show the current Scenegraph" );
     SceneTree->getRoot()->clearChildren();
+	itemCounter = 1;
     addSceneTreeItem (device->getSceneManager()->getRootSceneNode(), SceneTree->getRoot());
 
 	IGUIImageList* imageList = device->getGUIEnvironment()->createImageList(device->getVideoDriver()->getTexture ( "../media/iconlist.png" ), dimension2di( 32, 32 ), true );
@@ -188,6 +196,7 @@ public:
 					tmp->LoadModel(core::stringc(dialog->getFileName()).c_str());
 					Objects.push_back(*tmp);
 					SceneTree->getRoot()->clearChildren();
+					itemCounter = 1;
 					addSceneTreeItem(device->getSceneManager()->getRootSceneNode(), SceneTree->getRoot());
 
 
