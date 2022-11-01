@@ -131,7 +131,8 @@ void Model::LoadModel(const c8* fn) {
 
 	// auto m = parce(extension);
 
-	IAnimatedMesh* m = device->getSceneManager()->getMesh( filename.c_str() );
+	// IAnimatedMesh* m = device->getSceneManager()->getMesh( filename.c_str() );
+	IMesh* m = device->getSceneManager()->getMesh( filename.c_str() );
 
 
 	// Если модель не может быть загружена
@@ -145,11 +146,12 @@ void Model::LoadModel(const c8* fn) {
 	// устанавливаем свойства материала по умолчанию
 
 	if (Octree)
-		_Model = device->getSceneManager()->addOctreeSceneNode(m->getMesh(0));
+		_Model = device->getSceneManager()->addOctreeSceneNode(m);
 	else
 	{
-		scene::IAnimatedMeshSceneNode* animModel = device->getSceneManager()->addAnimatedMeshSceneNode(m);
-		animModel->setAnimationSpeed(30);
+		// scene::IAnimatedMeshSceneNode* animModel = device->getSceneManager()->addAnimatedMeshSceneNode(m);
+		scene::IMeshSceneNode* animModel = device->getSceneManager()->addMeshSceneNode(m);
+		// animModel->setAnimationSpeed(30);
 		_Model = animModel;
 	}
 	_Model->setMaterialFlag(video::EMF_LIGHTING, UseLight);

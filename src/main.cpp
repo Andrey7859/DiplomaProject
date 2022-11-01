@@ -19,6 +19,8 @@ int Height;
 #endif
 
 
+ICameraSceneNode *camera[4]={0,0,0,0};
+
 const wchar_t* _path;
 char buffer[BUFSIZE];
 int ret;
@@ -182,15 +184,23 @@ public:
 			case EGET_BUTTON_CLICKED:
 				switch(id)
 				{
+				case GUI_ID_PERSPECTIVE_BUTTON:{
+					currentViewState = GUI_ID_PERSPECTIVE_BUTTON;
+					return true;
+
+					break;
+				}
 				case GUI_ID_TOP_BUTTON:{
-					top = !top; //!!!
+					// top = !top; //!!!
+					currentViewState = GUI_ID_TOP_BUTTON;
 					return true;
 
 					break;
 				}
 
 				case GUI_ID_SPLIT_BUTTON:{
-					splitScreen = !splitScreen; //!!!
+					// splitScreen = !splitScreen; //!!!
+					currentViewState = GUI_ID_SPLIT_BUTTON;
 					return true;
 
 					break;
@@ -509,7 +519,29 @@ void addContentBrowserTree(IGUITab* t2) {
 
 
 
+void splitscreen() {
+	ISceneManager* smgr = device->getSceneManager();
+	IVideoDriver* driver = device->getVideoDriver();
 
+	// !!! Левая верхняя часть перспектива 
+	smgr->setActiveCamera(camera[0]);
+	driver->setViewPort(rect<s32>( 500, 50, 950, 450));
+	camera[0]->setPosition(*(CurrentObject.getCoord()) + vector3df(0, 30, -40));
+	camera[0]->setTarget(*(CurrentObject.getCoord()));
+	smgr->drawAll();
+	//Правая верхняя часть топ 
+	smgr->setActiveCamera(camera[1]);
+	driver->setViewPort(rect<s32>( 950, 50, 1550, 500));
+	smgr->drawAll();
+	//Нижняя левая часть фрон
+	smgr->setActiveCamera(camera[2]);
+	driver->setViewPort(rect<s32>( 500, 500, 950, 1100));
+	smgr->drawAll();
+	// Нижняя првая часть с лева 
+	smgr->setActiveCamera(camera[3]);
+	driver->setViewPort(rect<s32>( 950, 500, 1550, 1250));
+	smgr->drawAll();
+}
 
 //Создание окна Explorer 
 void createExplorer()
@@ -543,6 +575,10 @@ int main(int argc,char **argv){
 	glutInit(&argc,argv);
 	Width = glutGet(GLUT_SCREEN_WIDTH);
     Height = glutGet(GLUT_SCREEN_HEIGHT);
+
+	cout << "\t Widht   :" << Width << endl;
+	cout << "\t Height   :" << Height << endl;
+
 
 	device = createDevice(video::EDT_SOFTWARE, dimension2d<u32>(Width, Height), 16, true, false, false, 0);
 
@@ -618,13 +654,18 @@ int main(int argc,char **argv){
 	submenu->addItem(L"About", GUI_ID_ABOUT);
 
 	 
+	// Model.LoadModel(StartUpModelFile.c_str());
+	Model* tmp = new Model;
+	tmp->LoadModel(StartUpModelFile.c_str());
+	Objects.push_back(*tmp);
+	CurrentObject = Objects[0];
+
 	// ICameraSceneNode* camera = smgr->addCameraSceneNode(0, vector3df(0,30,-40), vector3df(0,5,0));
 	// camera->setName("Camera");
 	//!!!
-	ICameraSceneNode *camera[4]={0,0,0,0};
 	//Основная
-	camera[0] = smgr->addCameraSceneNode(0, vector3df(0,30,-40), vector3df(0,0,0));
-	// //Top
+	camera[0] = smgr->addCameraSceneNode(0, *(CurrentObject.getCoord()) + vector3df(0, 30, -40), *(CurrentObject.getCoord()));
+	// Top
 	camera[1] = smgr->addCameraSceneNode(0, vector3df(0,50,0), vector3df(0,0,0));
 	//Front
 	camera[2] = smgr->addCameraSceneNode(0, vector3df(50,0,0), vector3df(0,0,0));
@@ -632,11 +673,7 @@ int main(int argc,char **argv){
 	camera[3] = smgr->addCameraSceneNode(0, vector3df(0,0,50), vector3df(0,0,0));
 
 
-	// Model.LoadModel(StartUpModelFile.c_str());
-	Model* tmp = new Model;
-	tmp->LoadModel(StartUpModelFile.c_str());
-	Objects.push_back(*tmp);
-	CurrentObject = Objects[0];
+	
 
 
 	createButtonsField(driver);
@@ -655,45 +692,27 @@ int main(int argc,char **argv){
 		// if (device->isWindowActive()) {
 		driver->beginScene(true, true, SColor(255,100,101,140)); // Отчищает буфер глубина каждый кадр
 
-		/// Включение камер при нажатии на кнопку Split
-		if (splitScreen){ 
-		
-			// !!! Левая верхняя часть перспектива 
-			smgr->setActiveCamera(camera[0]);
-			driver->setViewPort(rect<s32>( 500, 50, 950, 450));
-			smgr->drawAll();
-			//Правая верхняя часть топ 
-			smgr->setActiveCamera(camera[1]);
-			driver->setViewPort(rect<s32>( 950, 50, 1550, 500));
-			smgr->drawAll();
-			//Нижняя левая часть фрон
-			smgr->setActiveCamera(camera[2]);
-			driver->setViewPort(rect<s32>( 500, 500, 950, 1100));
-			smgr->drawAll();
-			// Нижняя првая часть с лева 
-			smgr->setActiveCamera(camera[3]);
-			driver->setViewPort(rect<s32>( 950, 500, 1550, 1250));
-			smgr->drawAll();
 
+		switch (currentViewState)
+		{
+			case GUI_ID_PERSPECTIVE_BUTTON:
+				smgr->setActiveCamera(camera[0]);
+				driver->setViewPort(rect<s32>( 0, 0, Width, Height));
+				smgr->drawAll();
+				break;
+			case GUI_ID_TOP_BUTTON:
+				smgr->setActiveCamera(camera[1]);
+				driver->setViewPort(rect<s32>( 0, 0, Width, Height));
+				smgr->drawAll();
+				break;
+			case GUI_ID_FRONT_BUTTON:
+				break;
+			case GUI_ID_LEFT_BUTTON:
+				break;
+			case GUI_ID_SPLIT_BUTTON:
+				splitscreen();
+				break;		
 		}
-		else{ //При повторном нажатии вернуть к главной камере
-			smgr->setActiveCamera(camera[0]);
-			driver->setViewPort(rect<s32>( 0, 0, Width, Height));
-			smgr->drawAll();
-
-		}
-
-		// нажатие на кнопку
-		// if (top){
-		// 	smgr->setActiveCamera(camera[1]);
-		// 	driver->setViewPort(rect<s32>( 0, 0, Width, Height));
-		// 	smgr->drawAll();
-		// }
-		// else{ //При повторном нажатии вернуть к главной камере
-		// 	smgr->setActiveCamera(camera[0]);
-		// 	driver->setViewPort(rect<s32>( 0, 0, Width, Height));
-		// 	smgr->drawAll();
-		// }
 
 
 		smgr->drawAll();

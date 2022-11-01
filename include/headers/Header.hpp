@@ -110,3 +110,5 @@ enum
 	GUI_ID_ABOUT
 	
 };
+
+int currentViewState = GUI_ID_PERSPECTIVE_BUTTON;
