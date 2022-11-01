@@ -3,6 +3,9 @@
 
 int Width;
 int Height;
+
+
+
 /*
 По этим подключениям остались вопросы
 
@@ -24,16 +27,18 @@ Model CurrentObject;
 std::vector<Model> Objects;
 
 ISceneNode* node;
-
+bool splitScreen = false; //!!!
+bool top = false;
 
 // Макросы для работы с окнами
 #define EXPLORER_WINDOW_POS_Y BUTTON_SIZE + (OFFSET * 2)// 
 #define EXPLORER_WINDOW_POS_H ((Height / 2) - (EXPLORER_WINDOW_POS_Y * 2 - OFFSET))
 #define PROPERTIES_WINDOW_POS_H EXPLORER_WINDOW_POS_Y + EXPLORER_WINDOW_POS_H
-	int itemCounter = 1;	
+int itemCounter = 1;
+
 
 //Функция выводит элемент загруженный на сцену
-void addSceneTreeItem( ISceneNode * parent, IGUITreeViewNode* nodeParent){
+void addSceneTreeItem( ISceneNode * parent, IGUITreeViewNode* nodeParent){ 
 
 	IGUITreeViewNode* node;
 	wchar_t msg[128];
@@ -46,7 +51,7 @@ void addSceneTreeItem( ISceneNode * parent, IGUITreeViewNode* nodeParent){
 	
 		switch ( (*it)->getType () )
 		{
-			case ESNT_Q3SHADER_SCENE_NODE: imageIndex = 0; (*it)->setName("Q3Shader"); break;
+			case ESNT_Q3SHADER_SCENE_NODE: imageIndex = 0; (*it)->setName("Q3Shader"); ; break;
 			case ESNT_CAMERA: imageIndex = 1; (*it)->setName("Camera"); break;
 			case ESNT_EMPTY: imageIndex = 2; (*it)->setName("Empty"); break;
 			case ESNT_MESH: imageIndex = 3; (*it)->setName("Mesh"); break;
@@ -62,6 +67,7 @@ void addSceneTreeItem( ISceneNode * parent, IGUITreeViewNode* nodeParent){
 		if ( imageIndex < 0 )
 		{
 			swprintf ( msg, 128, L"%hs,%hs_%d", device->getSceneManager()->getSceneNodeTypeName ( (*it)->getType () ),(*it)->getName(), itemCounter);
+			
 		}
 		else
 		{
@@ -97,13 +103,13 @@ void addSceneTreeItem( ISceneNode * parent, IGUITreeViewNode* nodeParent){
 		// 	node->addChildBack( msg, 0, imageIndex );
 		// }
 
-		addSceneTreeItem ( *it, node);
+		addSceneTreeItem ( *it, node); 
 	}
 	itemCounter++;
-	// cout << "\t ItemCounter    " << itemCounter << endl;
+	// cout << "\t ItemCounter SMGR   " << smgr->getSceneNodeFromName("Camera_1", *it) << endl; 
+	
 
 }
-
 //Создание подокна отображеия на сцене Scene Explorer
 void addSceneExplorerTree(IGUITab* t1){	
 
@@ -111,7 +117,7 @@ void addSceneExplorerTree(IGUITab* t1){
     SceneTree->setToolTipText ( L"Show the current Scenegraph" );
     SceneTree->getRoot()->clearChildren();
 	itemCounter = 1;
-    addSceneTreeItem (device->getSceneManager()->getRootSceneNode(), SceneTree->getRoot());
+    addSceneTreeItem (device->getSceneManager()->getRootSceneNode(), SceneTree->getRoot()); 
 
 	IGUIImageList* imageList = device->getGUIEnvironment()->createImageList(device->getVideoDriver()->getTexture ( "../media/iconlist.png" ), dimension2di( 32, 32 ), true );
 
@@ -149,21 +155,26 @@ public:
 			{
 			case EGET_TREEVIEW_NODE_SELECT:
 				{
+					// // ISceneNode* tmp = (ISceneNode*) SceneTree->getSelected();
 					// ISceneNode* tmp = (ISceneNode*) SceneTree->getSelected();
-					ISceneNode* tmp = (ISceneNode*) SceneTree->getSelected();
 
-					for (int i = 0; i < Objects.size(); i++) {
-						// cout << tmp.getPosition().X << endl;
-						// if (Objects[i].getCoord()->X == tmp->getPosition().X){
-						// 	if (Objects[i].getCoord()->Y == tmp->getPosition().Y){
-						// 		if (Objects[i].getCoord()->Z == tmp->getPosition().Z){
-									// CurrentObject = Objects[i];
-						// 		}
-						// 	}
-						// }
-					}
+					// for (int i = 0; i < Objects.size(); i++) {
+					// 	// cout << tmp.getPosition().X << endl;
+					// 	// if (Objects[i].getCoord()->X == tmp->getPosition().X){
+					// 	// 	if (Objects[i].getCoord()->Y == tmp->getPosition().Y){
+					// 	// 		if (Objects[i].getCoord()->Z == tmp->getPosition().Z){
+					// 				// CurrentObject = Objects[i];
+					// 	// 		}
+					// 	// 	}
+					// 	// }
+					// }
+					// cout << "\t Name:  " << SceneTree->getSelected()->getText() << endl;
+					// if(SceneTree->getDebugName){
+						// cout << "\t Name:  " << SceneTree->getSelected()->getText() << endl;
+						// ISceneNode* tmp1 = (ISceneNode*)SceneTree->getSelected()->getData();
+						// cout << "\t Name:  " << tmp1->getName() << endl;
 					
-					
+
 					// cout << "\t\tid: " << tmp->getID() << endl;
 				}
 				break;
@@ -171,14 +182,19 @@ public:
 			case EGET_BUTTON_CLICKED:
 				switch(id)
 				{
-				case GUI_ID_QUIT_BUTTON:{
+				case GUI_ID_TOP_BUTTON:{
+					top = !top; //!!!
+					return true;
+
 					break;
 				}
-					
-				case GUI_ID_NEW_WINDOW_BUTTON:{
-					break;
-					}
+
+				case GUI_ID_SPLIT_BUTTON:{
+					splitScreen = !splitScreen; //!!!
 					return true;
+
+					break;
+				}
 
 				case GUI_ID_ADD_BUTTON:{
 					env->addFileOpenDialog(L"Please choose a file.", true, 0, -1, true);
@@ -330,7 +346,7 @@ void createButtonsField(IVideoDriver* driver){
 	IGUIButton* leftButton = env->addButton(rect<s32>((OFFSET * 12) + (BUTTON_SIZE * 9), OFFSET / 2, (BUTTON_SIZE * 10) + (OFFSET * 12), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_LEFT_BUTTON, L" ", L"Left view");
 	leftButton->setImage(driver->getTexture("../media/icon/left.jpg"));
 
-	IGUIButton* splitButton = env->addButton(rect<s32>((OFFSET * 13) + (BUTTON_SIZE * 10), OFFSET / 2, (BUTTON_SIZE * 11) + (OFFSET * 13), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_ASK_BUTTON, L" ", L"Split view");
+	IGUIButton* splitButton = env->addButton(rect<s32>((OFFSET * 13) + (BUTTON_SIZE * 10), OFFSET / 2, (BUTTON_SIZE * 11) + (OFFSET * 13), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_SPLIT_BUTTON, L" ", L"Split view");
 	splitButton->setImage(driver->getTexture("../media/icon/split.png"));
 
 	IGUIButton* simpleButton = env->addButton(rect<s32>((OFFSET * 15) + (BUTTON_SIZE * 11), OFFSET / 2, (BUTTON_SIZE * 12) + (OFFSET * 15), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_SIMPLE_BUTTON, L" ", L"Solid");
@@ -461,7 +477,7 @@ void addContentBrowserTreeItem(IGUITreeViewNode* nodeParent, std::string path){
 	filesList filesList[counter];
 
 	int size = scaner(filesList, path); //Заполняет количеством файлов, заполняет массив filesList
-	IGUITreeViewNode** node = new IGUITreeViewNode*[size];		// !!! Выделение динамической памяти массива
+	IGUITreeViewNode** node = new IGUITreeViewNode*[size];		//  Выделение динамической памяти массива
 
 	for(int i = 0; i < size; i++) {
 		mbstowcs(wc, filesList[i].str.c_str(), size);	// Данная функция переобразует тип данных char*   в   wchar_t* 
@@ -475,7 +491,7 @@ void addContentBrowserTreeItem(IGUITreeViewNode* nodeParent, std::string path){
 
 //Создание подокна отображеия на сцене Contetnt Browser 
 void addContentBrowserTree(IGUITab* t2) {
-	IGUITreeView* SceneTree;
+	// IGUITreeView* SceneTree;
 
     SceneTree = device->getGUIEnvironment()->addTreeView(rect<s32>( 0, OFFSET, 300, PROPERTIES_WINDOW_POS_H ), t2, -1, true, true, false );
     SceneTree->setToolTipText ( L"Show all files and folders into project" );
@@ -602,17 +618,25 @@ int main(int argc,char **argv){
 	submenu->addItem(L"About", GUI_ID_ABOUT);
 
 	 
-	ICameraSceneNode* camera = smgr->addCameraSceneNode(0, vector3df(0,30,-40), vector3df(0,5,0));
-	camera->setName("Camera");
+	// ICameraSceneNode* camera = smgr->addCameraSceneNode(0, vector3df(0,30,-40), vector3df(0,5,0));
+	// camera->setName("Camera");
+	//!!!
+	ICameraSceneNode *camera[4]={0,0,0,0};
+	//Основная
+	camera[0] = smgr->addCameraSceneNode(0, vector3df(0,30,-40), vector3df(0,0,0));
+	// //Top
+	camera[1] = smgr->addCameraSceneNode(0, vector3df(0,50,0), vector3df(0,0,0));
+	//Front
+	camera[2] = smgr->addCameraSceneNode(0, vector3df(50,0,0), vector3df(0,0,0));
+	//Left
+	camera[3] = smgr->addCameraSceneNode(0, vector3df(0,0,50), vector3df(0,0,0));
+
 
 	// Model.LoadModel(StartUpModelFile.c_str());
 	Model* tmp = new Model;
 	tmp->LoadModel(StartUpModelFile.c_str());
 	Objects.push_back(*tmp);
 	CurrentObject = Objects[0];
-
-
-
 
 
 	createButtonsField(driver);
@@ -627,13 +651,50 @@ int main(int argc,char **argv){
 	device->setEventReceiver(&receiver);
 
 
-
-
-
-
 	while(device->run()){
 		// if (device->isWindowActive()) {
 		driver->beginScene(true, true, SColor(255,100,101,140)); // Отчищает буфер глубина каждый кадр
+
+		/// Включение камер при нажатии на кнопку Split
+		if (splitScreen){ 
+		
+			// !!! Левая верхняя часть перспектива 
+			smgr->setActiveCamera(camera[0]);
+			driver->setViewPort(rect<s32>( 500, 50, 950, 450));
+			smgr->drawAll();
+			//Правая верхняя часть топ 
+			smgr->setActiveCamera(camera[1]);
+			driver->setViewPort(rect<s32>( 950, 50, 1550, 500));
+			smgr->drawAll();
+			//Нижняя левая часть фрон
+			smgr->setActiveCamera(camera[2]);
+			driver->setViewPort(rect<s32>( 500, 500, 950, 1100));
+			smgr->drawAll();
+			// Нижняя првая часть с лева 
+			smgr->setActiveCamera(camera[3]);
+			driver->setViewPort(rect<s32>( 950, 500, 1550, 1250));
+			smgr->drawAll();
+
+		}
+		else{ //При повторном нажатии вернуть к главной камере
+			smgr->setActiveCamera(camera[0]);
+			driver->setViewPort(rect<s32>( 0, 0, Width, Height));
+			smgr->drawAll();
+
+		}
+
+		// нажатие на кнопку
+		// if (top){
+		// 	smgr->setActiveCamera(camera[1]);
+		// 	driver->setViewPort(rect<s32>( 0, 0, Width, Height));
+		// 	smgr->drawAll();
+		// }
+		// else{ //При повторном нажатии вернуть к главной камере
+		// 	smgr->setActiveCamera(camera[0]);
+		// 	driver->setViewPort(rect<s32>( 0, 0, Width, Height));
+		// 	smgr->drawAll();
+		// }
+
 
 		smgr->drawAll();
 		guienv->drawAll();

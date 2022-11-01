@@ -8,7 +8,7 @@ std::string static_str[SIZE_STATIC] = { ".irr", ".irrmesh", ".3ds", ".obj", ".lw
 									".bsp", ".dmf", ".oct", ".csm", ".stl", ".ply"};
 std::string anim_str[SIZE_ANIM] = { ".b3d", ".x", ".ms3d", ".md2", ".md3" };
 
-core::stringc StartUpModelFile = "../media/dwarf.x";
+core::stringc StartUpModelFile = "../media/sydney.md2";
 core::stringw Caption;
 bool Octree=false;
 bool UseLight=false;
