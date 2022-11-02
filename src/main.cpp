@@ -29,8 +29,6 @@ Model CurrentObject;
 std::vector<Model> Objects;
 
 ISceneNode* node;
-bool splitScreen = false; //!!!
-bool top = false;
 
 // Макросы для работы с окнами
 #define EXPLORER_WINDOW_POS_Y BUTTON_SIZE + (OFFSET * 2)// 
@@ -180,7 +178,7 @@ public:
 					// cout << "\t\tid: " << tmp->getID() << endl;
 				}
 				break;
-
+			// Кнопки перспектив
 			case EGET_BUTTON_CLICKED:
 				switch(id)
 				{
@@ -191,15 +189,24 @@ public:
 					break;
 				}
 				case GUI_ID_TOP_BUTTON:{
-					// top = !top; //!!!
 					currentViewState = GUI_ID_TOP_BUTTON;
 					return true;
 
 					break;
 				}
+				case GUI_ID_FRONT_BUTTON:{
+					currentViewState = GUI_ID_FRONT_BUTTON;
+					return true;
 
+					break;
+				}
+				case GUI_ID_LEFT_BUTTON:{
+					currentViewState = GUI_ID_LEFT_BUTTON;
+					return true;
+
+					break;
+				}
 				case GUI_ID_SPLIT_BUTTON:{
-					// splitScreen = !splitScreen; //!!!
 					currentViewState = GUI_ID_SPLIT_BUTTON;
 					return true;
 
@@ -311,7 +318,6 @@ public:
 };
 
 //Функция создание поля кнопок
-
 void createButtonsField(IVideoDriver* driver){
 	IGUIEnvironment* env = device->getGUIEnvironment();
     IGUIElement* root = env->getRootGUIElement();
@@ -326,7 +332,7 @@ void createButtonsField(IVideoDriver* driver){
     IGUIWindow* wnd = env->addWindow(rect<s32>(0, OFFSET, Width, BUTTON_SIZE + (OFFSET * 2)), false, L"qwer", 0, GUI_ID_DIALOG_ROOT_2_WINDOW);
 	wnd->setDrawTitlebar(false);
 
-	IGUIButton* addButton = env->addButton(rect<s32>(OFFSET, OFFSET / 2, BUTTON_SIZE + OFFSET, BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_ADD_BUTTON, L" ",L"Add object");
+	IGUIButton* addButton = env->addButton(rect<s32>(OFFSET, OFFSET / 2 , BUTTON_SIZE + OFFSET, BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_ADD_BUTTON, L" ",L"Add object");
 	addButton->setImage(driver->getTexture("../media/icon/add.jpg"));
 	
 	IGUIButton* saveButton = env->addButton(rect<s32>((OFFSET * 2) + BUTTON_SIZE, OFFSET / 2, (BUTTON_SIZE + OFFSET) * 2, BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_SAVE_BUTTON, L" ", L"Save project");
@@ -338,34 +344,28 @@ void createButtonsField(IVideoDriver* driver){
 	IGUIButton* selectButton = env->addButton(rect<s32>((OFFSET * 5) + (BUTTON_SIZE * 3), OFFSET / 2, (BUTTON_SIZE * 4) + (OFFSET * 5), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_SELECT_BUTTON, L" ", L"Select object");
 	selectButton->setImage(driver->getTexture("../media/icon/select.jpg"));
 
-	IGUIButton* moveButton = env->addButton(rect<s32>((OFFSET * 6) + (BUTTON_SIZE * 4), OFFSET / 2, (BUTTON_SIZE * 5) + (OFFSET * 6), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_BRUSH_BUTTON, L"", L"Move object");
-	moveButton->setImage(driver->getTexture("../media/icon/move.jpg"));
-
-	// Под кисть
-	// env->addButton(rect<s32>((OFFSET * 7) + (BUTTON_SIZE * 5), OFFSET / 2, (BUTTON_SIZE * 6) + (OFFSET * 7), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_MOVE_BUTTON, L"MOVE", L"Moving an object");
-	
-	IGUIButton* perspectiveButton = env->addButton(rect<s32>((OFFSET * 9) + (BUTTON_SIZE * 6), OFFSET / 2, (BUTTON_SIZE * 7) + (OFFSET * 9), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_PERSPECTIVE_BUTTON, L" ", L"Perspective view");
+	IGUIButton* perspectiveButton = env->addButton(rect<s32>((OFFSET * 7) + (BUTTON_SIZE * 4), OFFSET / 2, (BUTTON_SIZE * 5) + (OFFSET * 7), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_PERSPECTIVE_BUTTON, L" ", L"Perspective view");
 	perspectiveButton->setImage(driver->getTexture("../media/icon/perspective.jpg"));
 
-	IGUIButton* topButton = env->addButton(rect<s32>((OFFSET * 10) + (BUTTON_SIZE * 7), OFFSET / 2, (BUTTON_SIZE * 8) + (OFFSET * 10), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_TOP_BUTTON, L" ", L"Top view");
+	IGUIButton* topButton = env->addButton(rect<s32>((OFFSET * 8) + (BUTTON_SIZE * 5), OFFSET / 2, (BUTTON_SIZE * 6) + (OFFSET * 8), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_TOP_BUTTON, L" ", L"Top view");
 	topButton->setImage(driver->getTexture("../media/icon/top.jpg"));
 
-	IGUIButton* frontButton = env->addButton(rect<s32>((OFFSET * 11) + (BUTTON_SIZE * 8), OFFSET / 2, (BUTTON_SIZE * 9) + (OFFSET * 11), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_FRONT_BUTTON, L" ", L"Front view");
+	IGUIButton* frontButton = env->addButton(rect<s32>((OFFSET * 9) + (BUTTON_SIZE * 6), OFFSET / 2, (BUTTON_SIZE * 7) + (OFFSET * 9), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_FRONT_BUTTON, L" ", L"Front view");
 	frontButton->setImage(driver->getTexture("../media/icon/front.jpg"));
 	
-	IGUIButton* leftButton = env->addButton(rect<s32>((OFFSET * 12) + (BUTTON_SIZE * 9), OFFSET / 2, (BUTTON_SIZE * 10) + (OFFSET * 12), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_LEFT_BUTTON, L" ", L"Left view");
+	IGUIButton* leftButton = env->addButton(rect<s32>((OFFSET * 10) + (BUTTON_SIZE * 7), OFFSET / 2, (BUTTON_SIZE * 8) + (OFFSET * 10), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_LEFT_BUTTON, L" ", L"Left view");
 	leftButton->setImage(driver->getTexture("../media/icon/left.jpg"));
 
-	IGUIButton* splitButton = env->addButton(rect<s32>((OFFSET * 13) + (BUTTON_SIZE * 10), OFFSET / 2, (BUTTON_SIZE * 11) + (OFFSET * 13), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_SPLIT_BUTTON, L" ", L"Split view");
+	IGUIButton* splitButton = env->addButton(rect<s32>((OFFSET * 11) + (BUTTON_SIZE * 8), OFFSET / 2, (BUTTON_SIZE * 9) + (OFFSET * 11), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_SPLIT_BUTTON, L" ", L"Split view");
 	splitButton->setImage(driver->getTexture("../media/icon/split.png"));
 
-	IGUIButton* simpleButton = env->addButton(rect<s32>((OFFSET * 15) + (BUTTON_SIZE * 11), OFFSET / 2, (BUTTON_SIZE * 12) + (OFFSET * 15), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_SIMPLE_BUTTON, L" ", L"Solid");
+	IGUIButton* simpleButton = env->addButton(rect<s32>((OFFSET * 13) + (BUTTON_SIZE * 9), OFFSET / 2, (BUTTON_SIZE * 10) + (OFFSET * 13), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_SIMPLE_BUTTON, L" ", L"Solid");
 	simpleButton->setImage(driver->getTexture("../media/icon/simple.jpg"));
 
-	IGUIButton* bboxButton = env->addButton(rect<s32>((OFFSET * 16) + (BUTTON_SIZE * 12), OFFSET / 2, (BUTTON_SIZE * 13) + (OFFSET * 16), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_BBOX_BUTTON, L" ", L"Bounding Box");
+	IGUIButton* bboxButton = env->addButton(rect<s32>((OFFSET * 14) + (BUTTON_SIZE * 10), OFFSET / 2, (BUTTON_SIZE * 11) + (OFFSET * 14), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_BBOX_BUTTON, L" ", L"Bounding Box");
 	bboxButton->setImage(driver->getTexture("../media/icon/bbox.png"));
 
-	IGUIButton* wireFrameButton = env->addButton(rect<s32>((OFFSET * 17) + (BUTTON_SIZE * 13), OFFSET / 2, (BUTTON_SIZE * 14) + (OFFSET * 17), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_WIREFRAME_BUTTON, L" ", L"Wire Frame");
+	IGUIButton* wireFrameButton = env->addButton(rect<s32>((OFFSET * 15) + (BUTTON_SIZE * 11), OFFSET / 2, (BUTTON_SIZE * 12) + (OFFSET * 15), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_WIREFRAME_BUTTON, L" ", L"Wire Frame");
 	wireFrameButton->setImage(driver->getTexture("../media/icon/wireFrame.jpg"));
 
 }
@@ -706,8 +706,14 @@ int main(int argc,char **argv){
 				smgr->drawAll();
 				break;
 			case GUI_ID_FRONT_BUTTON:
+				smgr->setActiveCamera(camera[2]);
+				driver->setViewPort(rect<s32>( 0, 0, Width, Height));
+				smgr->drawAll();
 				break;
 			case GUI_ID_LEFT_BUTTON:
+				smgr->setActiveCamera(camera[3]);
+				driver->setViewPort(rect<s32>( 0, 0, Width, Height));
+				smgr->drawAll();
 				break;
 			case GUI_ID_SPLIT_BUTTON:
 				splitscreen();
