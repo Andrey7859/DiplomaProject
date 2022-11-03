@@ -4,8 +4,6 @@
 int Width;
 int Height;
 
-
-
 /*
 По этим подключениям остались вопросы
 
@@ -30,11 +28,18 @@ std::vector<Model> Objects;
 
 ISceneNode* node;
 
-// Макросы для работы с окнами
-#define EXPLORER_WINDOW_POS_Y BUTTON_SIZE + (OFFSET * 2)// 
-#define EXPLORER_WINDOW_POS_H ((Height / 2) - (EXPLORER_WINDOW_POS_Y * 2 - OFFSET))
-#define PROPERTIES_WINDOW_POS_H EXPLORER_WINDOW_POS_Y + EXPLORER_WINDOW_POS_H
 int itemCounter = 1;
+int objectsCounter = 0;
+
+bool showDebug = false;
+
+// Макросы для работы с окнами		
+#define EXPLORER_WINDOW_POS_Y (BUTTON_SIZE + (OFFSET * 2)) //Отступ с верху 70
+#define EXPLORER_WINDOW_POS_H ( Height - EXPLORER_WINDOW_POS_Y - OFFSET ) / 2//Длина Explorer 468
+#define PROPERTIES_WINDOW_POS_H EXPLORER_WINDOW_POS_Y + EXPLORER_WINDOW_POS_H // Длина Prorerties 538
+#define EXPLORER_WINDOW_WIDTH ((Width / 5) - BUTTON_SIZE) // ширина Explorer и Toolset 304
+#define WINDOW_SPLIT_WIDTH (( Width - EXPLORER_WINDOW_WIDTH ) / 2 ) + EXPLORER_WINDOW_WIDTH// Ширина серидины окна сплит 992
+#define WINDOW_SPLIT_HEIGHT ((Height - EXPLORER_WINDOW_POS_Y ) / 2 ) + EXPLORER_WINDOW_POS_Y// Высота серидины окна сплит 548
 
 
 //Функция выводит элемент загруженный на сцену
@@ -48,7 +53,6 @@ void addSceneTreeItem( ISceneNode * parent, IGUITreeViewNode* nodeParent){
 	list<ISceneNode*>::ConstIterator it = parent->getChildren().begin();
 	
 	for (; it != parent->getChildren().end(); ++it){
-	
 		switch ( (*it)->getType () )
 		{
 			case ESNT_Q3SHADER_SCENE_NODE: imageIndex = 0; (*it)->setName("Q3Shader"); ; break;
@@ -77,7 +81,12 @@ void addSceneTreeItem( ISceneNode * parent, IGUITreeViewNode* nodeParent){
 		
 		// cout << "\n\tname_split:  " << (*it)->getName() << endl;
 		node = nodeParent->addChildBack( msg, 0, imageIndex ); //Добавляет ребенка в конец списка элеметов родтеля(Список является частью дерева)
+
+		// wchar_t vOut[12];
+		// _itow_s(objectsCounter, vOut, sizeof(vOut)/2, 10);
 		
+		// node->setText(vOut);
+		objectsCounter++;
 
 		// Отностся к анимированным элементам
 		// list<ISceneNodeAnimator*>::ConstIterator ait = (*it)->getAnimators().begin();
@@ -107,13 +116,12 @@ void addSceneTreeItem( ISceneNode * parent, IGUITreeViewNode* nodeParent){
 	}
 	itemCounter++;
 	// cout << "\t ItemCounter SMGR   " << smgr->getSceneNodeFromName("Camera_1", *it) << endl; 
-	
 
 }
 //Создание подокна отображеия на сцене Scene Explorer
 void addSceneExplorerTree(IGUITab* t1){	
 
-    SceneTree = device->getGUIEnvironment()->addTreeView(rect<s32>( 0, OFFSET, 300, PROPERTIES_WINDOW_POS_H ), t1, -1, true, true, false );
+    SceneTree = device->getGUIEnvironment()->addTreeView(rect<s32>( 0, OFFSET, EXPLORER_WINDOW_WIDTH, PROPERTIES_WINDOW_POS_H ), t1, -1, true, true, false );
     SceneTree->setToolTipText ( L"Show the current Scenegraph" );
     SceneTree->getRoot()->clearChildren();
 	itemCounter = 1;
@@ -155,33 +163,40 @@ public:
 			{
 			case EGET_TREEVIEW_NODE_SELECT:
 				{
-					// // ISceneNode* tmp = (ISceneNode*) SceneTree->getSelected();
-					// ISceneNode* tmp = (ISceneNode*) SceneTree->getSelected();
-
-					// for (int i = 0; i < Objects.size(); i++) {
-					// 	// cout << tmp.getPosition().X << endl;
-					// 	// if (Objects[i].getCoord()->X == tmp->getPosition().X){
-					// 	// 	if (Objects[i].getCoord()->Y == tmp->getPosition().Y){
-					// 	// 		if (Objects[i].getCoord()->Z == tmp->getPosition().Z){
-					// 				// CurrentObject = Objects[i];
-					// 	// 		}
-					// 	// 	}
-					// 	// }
-					// }
-					// cout << "\t Name:  " << SceneTree->getSelected()->getText() << endl;
-					// if(SceneTree->getDebugName){
-						// cout << "\t Name:  " << SceneTree->getSelected()->getText() << endl;
-						// ISceneNode* tmp1 = (ISceneNode*)SceneTree->getSelected()->getData();
-						// cout << "\t Name:  " << tmp1->getName() << endl;
+					// void * ptr;
+					// int* counter_ptr;
+					// unsigned long long int counter;
 					
+					IGUITreeViewNode* tmp = SceneTree->getRoot()->getFirstChild();
+					// ptr = tmp->getData();
+					// counter_ptr = (int*)ptr;
+					// counter = *counter_ptr;
+					const wchar_t* text = tmp->getText();
+					// int counter = _wtoi(text);
 
-					// cout << "\t\tid: " << tmp->getID() << endl;
+
+					// for (int i = 0; i < SceneTree->getChildren().size(); i++) {
+					// 	if(tmp->getData() == SceneTree->getSelected()->getData()) {
+					// 		ptr = SceneTree->getSelected()->getData();
+					// 		counter_ptr = reinterpret_cast<int*>(ptr);
+					// 		CurrentObject = Objects[counter];
+					// 		break;
+					// 	}
+
+					// 	tmp = tmp->getNextSibling();
+					// }
+
+					// cout << "\n\tcounter: " << counter << endl;
+					// cout << "\n\tCOORDS: " << CurrentObject.getCoord()->X << " " << CurrentObject.getCoord()->Z << endl;
 				}
 				break;
 			// Кнопки перспектив
 			case EGET_BUTTON_CLICKED:
-				switch(id)
-				{
+				switch(id){
+				case GUI_ID_ADD_BUTTON:{
+					env->addFileOpenDialog(L"Please choose a file.", true, 0, -1, true);
+					return true;
+				}
 				case GUI_ID_PERSPECTIVE_BUTTON:{
 					currentViewState = GUI_ID_PERSPECTIVE_BUTTON;
 					return true;
@@ -212,11 +227,29 @@ public:
 
 					break;
 				}
-
-				case GUI_ID_ADD_BUTTON:{
-					env->addFileOpenDialog(L"Please choose a file.", true, 0, -1, true);
+				case GUI_ID_SOLID_BUTTON:{
+				CurrentObject.getModel()->setMaterialType(CurrentObject.getModel()->getMaterial(0).MaterialType == video::EMT_SOLID ?
+					video::EMT_DETAIL_MAP : video::EMT_SOLID);
 					return true;
+
+					break;
 				}
+				case GUI_ID_BBOX_BUTTON:{
+				showDebug=!showDebug;
+				CurrentObject.getModel()->setDebugDataVisible(showDebug?scene::EDS_BBOX_ALL:scene::EDS_OFF);
+				return true;
+
+					break;
+				}
+				case GUI_ID_WIREFRAME_BUTTON:{
+				CurrentObject.getModel()->setMaterialFlag(video::EMF_WIREFRAME,
+						!CurrentObject.getModel()->getMaterial(0).Wireframe);
+				CurrentObject.getModel()->setMaterialFlag(video::EMF_POINTCLOUD, false);
+					return true;
+
+					break;
+				}
+
 				default:
 					return false;
 				}
@@ -231,10 +264,7 @@ public:
 					SceneTree->getRoot()->clearChildren();
 					itemCounter = 1;
 					addSceneTreeItem(device->getSceneManager()->getRootSceneNode(), SceneTree->getRoot());
-
-
-
-
+					
 				}
 				break;
 			case EGET_EDITBOX_ENTER:
@@ -332,6 +362,7 @@ void createButtonsField(IVideoDriver* driver){
     IGUIWindow* wnd = env->addWindow(rect<s32>(0, OFFSET, Width, BUTTON_SIZE + (OFFSET * 2)), false, L"qwer", 0, GUI_ID_DIALOG_ROOT_2_WINDOW);
 	wnd->setDrawTitlebar(false);
 
+	// Создание кнопок 1 Блок (Добавить, сохранить, удалить)
 	IGUIButton* addButton = env->addButton(rect<s32>(OFFSET, OFFSET / 2 , BUTTON_SIZE + OFFSET, BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_ADD_BUTTON, L" ",L"Add object");
 	addButton->setImage(driver->getTexture("../media/icon/add.jpg"));
 	
@@ -341,9 +372,11 @@ void createButtonsField(IVideoDriver* driver){
 	IGUIButton* deleteButton = env->addButton(rect<s32>((OFFSET * 3) + (BUTTON_SIZE * 2), OFFSET / 2, (BUTTON_SIZE + OFFSET) * 3, BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_DELETE_BUTTON, L" ", L"Delete project");
 	deleteButton->setImage(driver->getTexture("../media/icon/delete.jpg"));
 
+	// Создание кнопок 2 Блок (Выбор)
 	IGUIButton* selectButton = env->addButton(rect<s32>((OFFSET * 5) + (BUTTON_SIZE * 3), OFFSET / 2, (BUTTON_SIZE * 4) + (OFFSET * 5), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_SELECT_BUTTON, L" ", L"Select object");
 	selectButton->setImage(driver->getTexture("../media/icon/select.jpg"));
 
+	//Создание кнопок 3 Блок (Перспектива, топ, фронт, лефт, сплит)
 	IGUIButton* perspectiveButton = env->addButton(rect<s32>((OFFSET * 7) + (BUTTON_SIZE * 4), OFFSET / 2, (BUTTON_SIZE * 5) + (OFFSET * 7), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_PERSPECTIVE_BUTTON, L" ", L"Perspective view");
 	perspectiveButton->setImage(driver->getTexture("../media/icon/perspective.jpg"));
 
@@ -359,7 +392,8 @@ void createButtonsField(IVideoDriver* driver){
 	IGUIButton* splitButton = env->addButton(rect<s32>((OFFSET * 11) + (BUTTON_SIZE * 8), OFFSET / 2, (BUTTON_SIZE * 9) + (OFFSET * 11), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_SPLIT_BUTTON, L" ", L"Split view");
 	splitButton->setImage(driver->getTexture("../media/icon/split.png"));
 
-	IGUIButton* simpleButton = env->addButton(rect<s32>((OFFSET * 13) + (BUTTON_SIZE * 9), OFFSET / 2, (BUTTON_SIZE * 10) + (OFFSET * 13), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_SIMPLE_BUTTON, L" ", L"Solid");
+	//Создание кнопок 4 Блок (Симпл, bbox, wireFrame)
+	IGUIButton* simpleButton = env->addButton(rect<s32>((OFFSET * 13) + (BUTTON_SIZE * 9), OFFSET / 2, (BUTTON_SIZE * 10) + (OFFSET * 13), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_SOLID_BUTTON, L" ", L"Solid");
 	simpleButton->setImage(driver->getTexture("../media/icon/simple.jpg"));
 
 	IGUIButton* bboxButton = env->addButton(rect<s32>((OFFSET * 14) + (BUTTON_SIZE * 10), OFFSET / 2, (BUTTON_SIZE * 11) + (OFFSET * 14), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_BBOX_BUTTON, L" ", L"Bounding Box");
@@ -381,8 +415,8 @@ void createToolBox()
 	if (e)
         e->remove();
 
-    // Созадния окна Toolset   				  от края     отступ с верху   ширина    длина вниз
-    IGUIWindow* wnd = env->addWindow(rect<s32>(0, EXPLORER_WINDOW_POS_Y, 300, PROPERTIES_WINDOW_POS_H), false, L"Toolset", 0, GUI_ID_DIALOG_ROOT_WINDOW);
+    // Созадния окна Toolset   				  от края     отступ с верху  		 ширина    			длина вниз
+    IGUIWindow* wnd = env->addWindow(rect<s32>(0, EXPLORER_WINDOW_POS_Y, EXPLORER_WINDOW_WIDTH, PROPERTIES_WINDOW_POS_H), false, L"Toolset", 0, GUI_ID_DIALOG_ROOT_WINDOW);
 
 
     // create tab control and tabs
@@ -503,7 +537,7 @@ void addContentBrowserTreeItem(IGUITreeViewNode* nodeParent, std::string path){
 void addContentBrowserTree(IGUITab* t2) {
 	// IGUITreeView* SceneTree;
 
-    SceneTree = device->getGUIEnvironment()->addTreeView(rect<s32>( 0, OFFSET, 300, PROPERTIES_WINDOW_POS_H ), t2, -1, true, true, false );
+    SceneTree = device->getGUIEnvironment()->addTreeView(rect<s32>( 0, OFFSET, EXPLORER_WINDOW_WIDTH, PROPERTIES_WINDOW_POS_H ), t2, -1, true, true, false );
     SceneTree->setToolTipText ( L"Show all files and folders into project" );
     SceneTree->getRoot()->clearChildren();
     addContentBrowserTreeItem (SceneTree->getRoot(), ".");
@@ -525,21 +559,21 @@ void splitscreen() {
 
 	// !!! Левая верхняя часть перспектива 
 	smgr->setActiveCamera(camera[0]);
-	driver->setViewPort(rect<s32>( 500, 50, 950, 450));
+	driver->setViewPort(rect<s32>( EXPLORER_WINDOW_WIDTH, EXPLORER_WINDOW_POS_Y, WINDOW_SPLIT_WIDTH, WINDOW_SPLIT_HEIGHT));
 	camera[0]->setPosition(*(CurrentObject.getCoord()) + vector3df(0, 30, -40));
 	camera[0]->setTarget(*(CurrentObject.getCoord()));
 	smgr->drawAll();
 	//Правая верхняя часть топ 
 	smgr->setActiveCamera(camera[1]);
-	driver->setViewPort(rect<s32>( 950, 50, 1550, 500));
+	driver->setViewPort(rect<s32>( WINDOW_SPLIT_WIDTH, EXPLORER_WINDOW_POS_Y, Width, WINDOW_SPLIT_HEIGHT));
 	smgr->drawAll();
-	//Нижняя левая часть фрон
+	//Нижняя левая часть фронт
 	smgr->setActiveCamera(camera[2]);
-	driver->setViewPort(rect<s32>( 500, 500, 950, 1100));
+	driver->setViewPort(rect<s32>( EXPLORER_WINDOW_WIDTH, WINDOW_SPLIT_HEIGHT, WINDOW_SPLIT_WIDTH, Height));
 	smgr->drawAll();
 	// Нижняя првая часть с лева 
 	smgr->setActiveCamera(camera[3]);
-	driver->setViewPort(rect<s32>( 950, 500, 1550, 1250));
+	driver->setViewPort(rect<s32>( WINDOW_SPLIT_WIDTH, WINDOW_SPLIT_HEIGHT, Width, Height));
 	smgr->drawAll();
 }
 
@@ -553,8 +587,8 @@ void createExplorer()
 	if (e)
         e->remove();
 
-    // create the toolbox window			 от края     отступ с верху   ширина    длина вниз
-    IGUIWindow* wnd = env->addWindow(rect<s32>(0, PROPERTIES_WINDOW_POS_H, 300, PROPERTIES_WINDOW_POS_H * 2), false, L"Explorer", 0, GUI_ID_DIALOG_ROOT_3_WINDOW);
+    // create the toolbox window			 от края     отступ с верху  		 ширина    					длина вниз
+    IGUIWindow* wnd = env->addWindow(rect<s32>(0, PROPERTIES_WINDOW_POS_H, EXPLORER_WINDOW_WIDTH, PROPERTIES_WINDOW_POS_H * 2), false, L"Explorer", 0, GUI_ID_DIALOG_ROOT_3_WINDOW);
 
 
     //create tab control and tabs
@@ -579,6 +613,29 @@ int main(int argc,char **argv){
 	cout << "\t Widht   :" << Width << endl;
 	cout << "\t Height   :" << Height << endl;
 
+	cout << "\t блок 1 :" << endl;
+	cout << "\t EXPLORER_WINDOW_WIDTH   :" << EXPLORER_WINDOW_WIDTH << endl;
+	cout << "\t EXPLORER_WINDOW_POS_Y   :" << EXPLORER_WINDOW_POS_Y << endl;
+	cout << "\t WINDOW_SPLIT_WIDTH   :" << WINDOW_SPLIT_WIDTH << endl;
+	cout << "\t WINDOW_SPLIT_HEIGHT   :" << WINDOW_SPLIT_HEIGHT << endl;
+
+	cout << "\t блок 2 :" << endl;
+	cout << "\t WINDOW_SPLIT_WIDTH   :" << WINDOW_SPLIT_WIDTH << endl;
+	cout << "\t EXPLORER_WINDOW_POS_Y   :" << EXPLORER_WINDOW_POS_Y << endl;
+	cout << "\t Width   :" << Width << endl;
+	cout << "\t WINDOW_SPLIT_HEIGHT   :" << WINDOW_SPLIT_HEIGHT << endl;
+
+	cout << "\t блок 3 :" << endl;
+	cout << "\t EXPLORER_WINDOW_WIDTH   :" << EXPLORER_WINDOW_WIDTH << endl;
+	cout << "\t WINDOW_SPLIT_HEIGHT   :" << WINDOW_SPLIT_HEIGHT << endl;
+	cout << "\t WINDOW_SPLIT_WIDTH   :" << WINDOW_SPLIT_WIDTH << endl;
+	cout << "\t Height   :" << Height << endl;
+
+	cout << "\t блок 4 :" << endl;
+	cout << "\t WINDOW_SPLIT_WIDTH   :" << WINDOW_SPLIT_WIDTH << endl;
+	cout << "\t WINDOW_SPLIT_HEIGHT   :" << WINDOW_SPLIT_HEIGHT << endl;
+	cout << "\t Width   :" << Width << endl;
+	cout << "\t Height   :" << Height << endl;
 
 	device = createDevice(video::EDT_SOFTWARE, dimension2d<u32>(Width, Height), 16, true, false, false, 0);
 
@@ -660,9 +717,6 @@ int main(int argc,char **argv){
 	Objects.push_back(*tmp);
 	CurrentObject = Objects[0];
 
-	// ICameraSceneNode* camera = smgr->addCameraSceneNode(0, vector3df(0,30,-40), vector3df(0,5,0));
-	// camera->setName("Camera");
-	//!!!
 	//Основная
 	camera[0] = smgr->addCameraSceneNode(0, *(CurrentObject.getCoord()) + vector3df(0, 30, -40), *(CurrentObject.getCoord()));
 	// Top
@@ -672,7 +726,6 @@ int main(int argc,char **argv){
 	//Left
 	camera[3] = smgr->addCameraSceneNode(0, vector3df(0,0,50), vector3df(0,0,0));
 
-
 	
 
 
@@ -680,12 +733,13 @@ int main(int argc,char **argv){
 	createToolBox();
 	createExplorer();
 	
-	// Создаем объект receiver на основе класса MyEventReceiver. Передаем структуру Context
+	// Создаем объект receiver на основе класса MyEventReceiver.
 					//Накопитель
 	MyEventReceiver receiver;
 
 	// And tell the device to use our custom event receiver.
 	device->setEventReceiver(&receiver);
+	// cout << "\t Get data    :" << objectsCounter << endl;
 
 
 	while(device->run()){
@@ -719,6 +773,7 @@ int main(int argc,char **argv){
 				splitscreen();
 				break;		
 		}
+
 
 
 		smgr->drawAll();

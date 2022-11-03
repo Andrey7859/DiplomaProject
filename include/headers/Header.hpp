@@ -14,6 +14,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <wchar.h>
+
 
 
 using namespace std;
@@ -76,7 +78,7 @@ enum
 	GUI_ID_LEFT_BUTTON,
 	GUI_ID_SPLIT_BUTTON,
 
-	GUI_ID_SIMPLE_BUTTON,
+	GUI_ID_SOLID_BUTTON,
 	GUI_ID_BBOX_BUTTON,
 	GUI_ID_WIREFRAME_BUTTON,
 
