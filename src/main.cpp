@@ -31,7 +31,7 @@ ISceneNode* node;
 int itemCounter = 1;
 int objectsCounter = 0;
 
-bool showDebug = false;
+bool showDebug = false; // Для Wareframe и  BBox
 
 // Макросы для работы с окнами		
 #define EXPLORER_WINDOW_POS_Y (BUTTON_SIZE + (OFFSET * 2)) //Отступ с верху 70
@@ -136,7 +136,57 @@ void addSceneExplorerTree(IGUITab* t1){
 
 }
 
+//Обработчик событий нажатий на пункты меню
+void OnMenuItemSelected( IGUIContextMenu* menu ){
 
+	s32 id = menu->getItemCommandId(menu->getSelectedItem());
+		IGUIEnvironment* env = device->getGUIEnvironment();
+
+	switch(id){
+	// Блок меню File
+	case GUI_ID_OPEN_MODEL: // Добавить новую модель
+		env->addFileOpenDialog(L"Please choose a file.", true, 0, -1, true);
+		break;
+	case GUI_ID_SAVE_MODEL: // Сохранение
+		break;
+	case GUI_ID_DELETE_MODEL: // Удалить модель 
+		break;
+	case GUI_ID_QUIT: // Выход из программы
+		device->closeDevice();
+		break;
+	// Блок меню Edit
+	case GUI_ID_BRUSH: // Удалить модель 
+		break;
+	// Подблок меню View 1
+	case GUI_ID_PERSPECTIVE: // Вид перспективы
+		currentViewState = GUI_ID_PERSPECTIVE_BUTTON;
+		break;
+	case GUI_ID_TOP: // Вид сверху
+		currentViewState = GUI_ID_TOP_BUTTON;
+		break;
+	case GUI_ID_FRONT: // Вид фронт 
+		currentViewState = GUI_ID_FRONT_BUTTON;
+		break;
+	case GUI_ID_LEFT: // Вид слева
+		currentViewState = GUI_ID_LEFT_BUTTON;
+		break;
+	case GUI_ID_SPLIT: // Вид слева
+		currentViewState = GUI_ID_LEFT_BUTTON;
+		break;
+	// Подблок меню View 2
+	case GUI_ID_BBOX: // BBox
+		showDebug=!showDebug;
+		CurrentObject.getModel()->setDebugDataVisible(showDebug?scene::EDS_BBOX_ALL:scene::EDS_OFF);
+		break;
+	case GUI_ID_WAREFRANE: // Wareframe
+		CurrentObject.getModel()->setMaterialFlag(video::EMF_WIREFRAME,
+			!CurrentObject.getModel()->getMaterial(0).Wireframe);
+		CurrentObject.getModel()->setMaterialFlag(video::EMF_POINTCLOUD, false);		break;
+		break;
+	case GUI_ID_ABOUT: // О программе
+		break;
+	}
+}
 
 
 // Создаем класс для отлавливания обработки всех событий
@@ -190,7 +240,11 @@ public:
 					// cout << "\n\tCOORDS: " << CurrentObject.getCoord()->X << " " << CurrentObject.getCoord()->Z << endl;
 				}
 				break;
-			// Кнопки перспектив
+			// Элементы меню
+			case EGET_MENU_ITEM_SELECTED:
+					OnMenuItemSelected( (IGUIContextMenu*)event.GUIEvent.Caller );
+				break;
+			// Кнопки 
 			case EGET_BUTTON_CLICKED:
 				switch(id){
 				case GUI_ID_ADD_BUTTON:{
@@ -227,26 +281,41 @@ public:
 
 					break;
 				}
-				case GUI_ID_SOLID_BUTTON:{
-				CurrentObject.getModel()->setMaterialType(CurrentObject.getModel()->getMaterial(0).MaterialType == video::EMT_SOLID ?
-					video::EMT_DETAIL_MAP : video::EMT_SOLID);
-					return true;
-
-					break;
-				}
 				case GUI_ID_BBOX_BUTTON:{
-				showDebug=!showDebug;
-				CurrentObject.getModel()->setDebugDataVisible(showDebug?scene::EDS_BBOX_ALL:scene::EDS_OFF);
-				return true;
+					showDebug=!showDebug;
+					CurrentObject.getModel()->setDebugDataVisible(showDebug?scene::EDS_BBOX_ALL:scene::EDS_OFF);
+					return true;
 
 					break;
 				}
 				case GUI_ID_WIREFRAME_BUTTON:{
-				CurrentObject.getModel()->setMaterialFlag(video::EMF_WIREFRAME,
+					CurrentObject.getModel()->setMaterialFlag(video::EMF_WIREFRAME,
 						!CurrentObject.getModel()->getMaterial(0).Wireframe);
-				CurrentObject.getModel()->setMaterialFlag(video::EMF_POINTCLOUD, false);
-					return true;
+					CurrentObject.getModel()->setMaterialFlag(video::EMF_POINTCLOUD, false);
+						return true;
 
+					break;
+				}
+				case GUI_ID_BUTTON_SCALE_MUL10:{
+					CurrentObject.getScale()->X = 1;
+					CurrentObject.setScale(*CurrentObject.getScale());
+					CurrentObject.getScale()->Y = 1;
+					CurrentObject.setScale(*CurrentObject.getScale());
+					CurrentObject.getScale()->Y = 1;
+					CurrentObject.setScale(*CurrentObject.getScale());
+
+					return true;
+					break;
+				}
+				case GUI_ID_BUTTON_SCALE_DIV10:{
+					CurrentObject.getScale()->X = 0.5;
+					CurrentObject.setScale(*CurrentObject.getScale());
+					CurrentObject.getScale()->Y = 0.5;
+					CurrentObject.setScale(*CurrentObject.getScale());
+					CurrentObject.getScale()->Y = 0.5;
+					CurrentObject.setScale(*CurrentObject.getScale());
+
+					return true;
 					break;
 				}
 
@@ -347,6 +416,8 @@ public:
 
 };
 
+
+
 //Функция создание поля кнопок
 void createButtonsField(IVideoDriver* driver){
 	IGUIEnvironment* env = device->getGUIEnvironment();
@@ -392,14 +463,11 @@ void createButtonsField(IVideoDriver* driver){
 	IGUIButton* splitButton = env->addButton(rect<s32>((OFFSET * 11) + (BUTTON_SIZE * 8), OFFSET / 2, (BUTTON_SIZE * 9) + (OFFSET * 11), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_SPLIT_BUTTON, L" ", L"Split view");
 	splitButton->setImage(driver->getTexture("../media/icon/split.png"));
 
-	//Создание кнопок 4 Блок (Симпл, bbox, wireFrame)
-	IGUIButton* simpleButton = env->addButton(rect<s32>((OFFSET * 13) + (BUTTON_SIZE * 9), OFFSET / 2, (BUTTON_SIZE * 10) + (OFFSET * 13), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_SOLID_BUTTON, L" ", L"Solid");
-	simpleButton->setImage(driver->getTexture("../media/icon/simple.jpg"));
-
-	IGUIButton* bboxButton = env->addButton(rect<s32>((OFFSET * 14) + (BUTTON_SIZE * 10), OFFSET / 2, (BUTTON_SIZE * 11) + (OFFSET * 14), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_BBOX_BUTTON, L" ", L"Bounding Box");
+	//Создание кнопок 4 Блок (bbox, wireFrame)
+	IGUIButton* bboxButton = env->addButton(rect<s32>((OFFSET * 13) + (BUTTON_SIZE * 9), OFFSET / 2, (BUTTON_SIZE * 10) + (OFFSET * 13), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_BBOX_BUTTON, L" ", L"Bounding Box");
 	bboxButton->setImage(driver->getTexture("../media/icon/bbox.png"));
 
-	IGUIButton* wireFrameButton = env->addButton(rect<s32>((OFFSET * 15) + (BUTTON_SIZE * 11), OFFSET / 2, (BUTTON_SIZE * 12) + (OFFSET * 15), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_WIREFRAME_BUTTON, L" ", L"Wire Frame");
+	IGUIButton* wireFrameButton = env->addButton(rect<s32>((OFFSET * 14) + (BUTTON_SIZE * 10), OFFSET / 2, (BUTTON_SIZE * 11) + (OFFSET * 14), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_WIREFRAME_BUTTON, L" ", L"Wire Frame");
 	wireFrameButton->setImage(driver->getTexture("../media/icon/wireFrame.jpg"));
 
 }
@@ -425,34 +493,39 @@ void createToolBox()
 
     // IGUITab* t1 = tab->addTab(L"Config");
 
-	int x0 = 100;
-	int between= 30;
-	int w = 30;
+	int offset50 = 50;
+	// int offset;
+
 
     // Location (Расположение)
-    env->addStaticText(L"Location:", rect<s32>(5,5 + OFFSET ,100,25 + OFFSET), false, false, wnd);
-    env->addEditBox(L"1.0", rect<s32>(x0,5+ OFFSET ,x0 + w,25+ OFFSET ), true, wnd, GUI_ID_X_POS);
-
-    env->addEditBox(L"1.0", rect<s32>(x0 + w + between, 5 + OFFSET  ,x0 + w + between + w,25 + OFFSET ), true, wnd, GUI_ID_Y_POS);
-
-    env->addEditBox(L"1.0", rect<s32>(x0 + w + between + w + between,5 + OFFSET , x0 + w + between + w + between + w  ,25 + OFFSET ), true, wnd, GUI_ID_Z_POS);
+    env->addStaticText(L"Location:", rect<s32>( offset50 / 2 , offset50 / 2, 80, 45), false, false, wnd);
+	env->addStaticText(L"X:", core::rect<s32>(10,52,18,70), false, false, wnd);
+    env->addEditBox(L"1.0", rect<s32>(25 , 50, 85, 70), true, wnd, GUI_ID_X_POS);
+	env->addStaticText(L"Y:", core::rect<s32>(15,80,20,100), false, false, wnd);
+    env->addEditBox(L"1.0", rect<s32>(25, 80, 85, 100), true, wnd, GUI_ID_Y_POS);
+	env->addStaticText(L"Z:", core::rect<s32>(15,110,20,130), false, false, wnd);
+    env->addEditBox(L"1.0", rect<s32>(25, 110, 85, 130), true, wnd, GUI_ID_Z_POS);
 
 	// Location Rotation (Расположение :: Варащение)
-    env->addStaticText(L"Rotation:", rect<s32>(5,30 + OFFSET ,100,50 + OFFSET ), false, false, wnd);
-    env->addEditBox(L"1.0", rect<s32>(x0,30+  OFFSET ,x0 + w,50 + OFFSET ), true, wnd, GUI_ID_X_ROT);
+    // env->addStaticText(L"Rotation:", rect<s32>(25, 135, 80, 155), false, false, wnd);
+    // env->addEditBox(L"1.0", rect<s32>(x0,30+  OFFSET ,x0 + w,50 + OFFSET ), true, wnd, GUI_ID_X_ROT);
 
-    env->addEditBox(L"1.0", rect<s32>(x0 + w + between,30 + OFFSET ,x0 + w + between + w,50 + OFFSET ), true, wnd, GUI_ID_Y_ROT);
+    // env->addEditBox(L"1.0", rect<s32>(x0 + w + between,30 + OFFSET ,x0 + w + between + w,50 + OFFSET ), true, wnd, GUI_ID_Y_ROT);
 
-    env->addEditBox(L"1.0", rect<s32>(x0 + w + between + w + between,30 + OFFSET , x0 + w + between + w + between + w  ,50 + OFFSET), true, wnd, GUI_ID_Z_ROT);
+    // env->addEditBox(L"1.0", rect<s32>(x0 + w + between + w + between,30 + OFFSET , x0 + w + between + w + between + w  ,50 + OFFSET), true, wnd, GUI_ID_Z_ROT);
 
-	// Location Scale (Расположение :: Маштаб)
-    env->addStaticText(L"Scale:", rect<s32>(5,55 + OFFSET ,100,75 + OFFSET ), false, false, wnd);
-    env->addEditBox(L"1.0", rect<s32>(x0,55 +  OFFSET ,x0 + w,75 + OFFSET ), true, wnd, GUI_ID_X_SCALE);
+	// // Location Scale (Расположение :: Маштаб)
+    // env->addStaticText(L"Scale:", rect<s32>(5,55 + OFFSET ,100,75 + OFFSET ), false, false, wnd);
+    // env->addEditBox(L"1.0", rect<s32>(x0,55 +  OFFSET ,x0 + w,75 + OFFSET ), true, wnd, GUI_ID_X_SCALE);
 
-    env->addEditBox(L"1.0", rect<s32>(x0 + w + between,55 + OFFSET ,x0 + w + between + w,75 + OFFSET ), true, wnd, GUI_ID_Y_SCALE);
+    // env->addEditBox(L"1.0", rect<s32>(x0 + w + between,55 + OFFSET ,x0 + w + between + w,75 + OFFSET ), true, wnd, GUI_ID_Y_SCALE);
 
-    env->addEditBox(L"1.0", rect<s32>(x0 + w + between + w + between,55 + OFFSET , x0 + w + between + w + between + w  ,75 + OFFSET), true, wnd, GUI_ID_Z_SCALE);
+    // env->addEditBox(L"1.0", rect<s32>(x0 + w + between + w + between,55 + OFFSET , x0 + w + between + w + between + w  ,75 + OFFSET), true, wnd, GUI_ID_Z_SCALE);
     
+	// Scale 10 /10 buttons
+	env->addButton(rect<s32>(100,200,150,250), wnd, GUI_ID_BUTTON_SCALE_MUL10, L"* 10");
+	env->addButton(rect<s32>(100,300,150,350), wnd, GUI_ID_BUTTON_SCALE_DIV10, L"* 0.1");
+
 	CurrentObject.updatePosInfo();
 }
 
@@ -613,29 +686,7 @@ int main(int argc,char **argv){
 	cout << "\t Widht   :" << Width << endl;
 	cout << "\t Height   :" << Height << endl;
 
-	cout << "\t блок 1 :" << endl;
-	cout << "\t EXPLORER_WINDOW_WIDTH   :" << EXPLORER_WINDOW_WIDTH << endl;
-	cout << "\t EXPLORER_WINDOW_POS_Y   :" << EXPLORER_WINDOW_POS_Y << endl;
-	cout << "\t WINDOW_SPLIT_WIDTH   :" << WINDOW_SPLIT_WIDTH << endl;
-	cout << "\t WINDOW_SPLIT_HEIGHT   :" << WINDOW_SPLIT_HEIGHT << endl;
 
-	cout << "\t блок 2 :" << endl;
-	cout << "\t WINDOW_SPLIT_WIDTH   :" << WINDOW_SPLIT_WIDTH << endl;
-	cout << "\t EXPLORER_WINDOW_POS_Y   :" << EXPLORER_WINDOW_POS_Y << endl;
-	cout << "\t Width   :" << Width << endl;
-	cout << "\t WINDOW_SPLIT_HEIGHT   :" << WINDOW_SPLIT_HEIGHT << endl;
-
-	cout << "\t блок 3 :" << endl;
-	cout << "\t EXPLORER_WINDOW_WIDTH   :" << EXPLORER_WINDOW_WIDTH << endl;
-	cout << "\t WINDOW_SPLIT_HEIGHT   :" << WINDOW_SPLIT_HEIGHT << endl;
-	cout << "\t WINDOW_SPLIT_WIDTH   :" << WINDOW_SPLIT_WIDTH << endl;
-	cout << "\t Height   :" << Height << endl;
-
-	cout << "\t блок 4 :" << endl;
-	cout << "\t WINDOW_SPLIT_WIDTH   :" << WINDOW_SPLIT_WIDTH << endl;
-	cout << "\t WINDOW_SPLIT_HEIGHT   :" << WINDOW_SPLIT_HEIGHT << endl;
-	cout << "\t Width   :" << Width << endl;
-	cout << "\t Height   :" << Height << endl;
 
 	device = createDevice(video::EDT_SOFTWARE, dimension2d<u32>(Width, Height), 16, true, false, false, 0);
 
@@ -659,7 +710,9 @@ int main(int argc,char **argv){
 	IGUIEnvironment* guienv = device->getGUIEnvironment(); //Список всех виджитов
 
 	IGUISkin* skin = guienv->getSkin();
-	IGUIFont* font = guienv->getFont("../media/fontlucida.png");
+	// IGUIFont* font = guienv->getFont("../media/fontlucida.png");
+	IGUIFont* font = guienv->getFont("../media/fonthaettenschweiler.bmp");
+
 	if (font)
 		skin->setFont(font); //шрифт
 	else
@@ -683,29 +736,25 @@ int main(int argc,char **argv){
 
 	// Вкладка редактровать (Edit)
 	submenu = menu->getSubMenu(1);
-	submenu->addItem(L"Select", GUI_ID_SELECT);
 	submenu->addItem(L"Brush", GUI_ID_BRUSH);
-	submenu->addItem(L"Move", GUI_ID_MOVE);
 
 	// Вкладка вид (View)
 	submenu = menu->getSubMenu(2);
-	submenu->addItem(L"View", GUI_ID_VIEW, true, true);
-	submenu->addItem(L"Camera", GUI_ID_CAMERA, true, true);
-
+	submenu->addItem(L"Camera", GUI_ID_VIEW, true, true);
+	submenu->addItem(L"View", GUI_ID_CAMERA, true, true);
+		//Подвкладка вид 1(View)
 		submenu = menu->getSubMenu(2)->getSubMenu(0);
-		submenu->addItem(L"Solid", GUI_ID_SOLID);
-		submenu->addItem(L"Wareframe", GUI_ID_WAREFRANE);
-		submenu->addItem(L"Reflection", GUI_ID_REFLECATION);
-
-		submenu = menu->getSubMenu(2)->getSubMenu(1);
 		submenu->addItem(L"Perspective", GUI_ID_PERSPECTIVE);
 		submenu->addItem(L"Top", GUI_ID_TOP);
 		submenu->addItem(L"Left", GUI_ID_LEFT);
 		submenu->addItem(L"Front", GUI_ID_FRONT);
-		submenu->addItem(L"Back", GUI_ID_BACK);
-		submenu->addItem(L"Bottom", GUI_ID_BOTTOM);
-		submenu->addItem(L"Right", GUI_ID_RIGHT);
+		submenu->addItem(L"Split", GUI_ID_SPLIT);
+		//Подвкладка вид 2(View)
+		submenu = menu->getSubMenu(2)->getSubMenu(1);
+		submenu->addItem(L"Bounding box", GUI_ID_BBOX);
+		submenu->addItem(L"Wareframe", GUI_ID_WAREFRANE);
 
+		
 	// Вкладка о прииложении (About)
 	submenu = menu->getSubMenu(3);
 	submenu->addItem(L"About", GUI_ID_ABOUT);
