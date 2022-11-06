@@ -1,6 +1,8 @@
 #pragma once
 
 #include <irrlicht.h>
+#include <wchar.h>
+#include <stdlib.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <GL/glut.h>
@@ -11,10 +13,8 @@
 #include <vector>
 #include <map>
 #include <string_view>
-#include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
-#include <wchar.h>
 
 
 
@@ -61,10 +61,18 @@ enum
 	GUI_ID_Y_SCALE,
 	GUI_ID_Z_SCALE,
 
-	GUI_ID_BUTTON_SET_SCALE,
-	GUI_ID_BUTTON_SCALE_MUL10,
-	GUI_ID_BUTTON_SCALE_DIV10,
+	GUI_ID_X_SCROLL_POS,
+	GUI_ID_Y_SCROLL_POS,
+	GUI_ID_Z_SCROLL_POS,
 
+	GUI_ID_X_SCROLL_ROT,
+	GUI_ID_Y_SCROLL_ROT,
+	GUI_ID_Z_SCROLL_ROT,
+
+	GUI_ID_X_SCROLL_SCALE,
+	GUI_ID_Y_SCROLL_SCALE,
+	GUI_ID_Z_SCROLL_SCALE,
+	
 	// Buttons (Кнопки)
 	GUI_ID_ADD_BUTTON,
 	GUI_ID_SAVE_BUTTON,

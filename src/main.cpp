@@ -16,6 +16,15 @@ int Height;
 #pragma comment(linker, "/subsystem:windows /ENTRY:mainCRTStartup")
 #endif
 
+IGUIEditBox* editboxPosX;
+IGUIEditBox* editboxPosY;
+IGUIEditBox* editboxPosZ;
+IGUIEditBox* editboxRotX;
+IGUIEditBox* editboxRotY;
+IGUIEditBox* editboxRotZ;
+IGUIEditBox* editboxScaleX;
+IGUIEditBox* editboxScaleY;
+IGUIEditBox* editboxScaleZ;
 
 ICameraSceneNode *camera[4]={0,0,0,0};
 
@@ -40,7 +49,8 @@ bool showDebug = false; // Для Wareframe и  BBox
 #define EXPLORER_WINDOW_WIDTH ((Width / 5) - BUTTON_SIZE) // ширина Explorer и Toolset 304
 #define WINDOW_SPLIT_WIDTH (( Width - EXPLORER_WINDOW_WIDTH ) / 2 ) + EXPLORER_WINDOW_WIDTH// Ширина серидины окна сплит 992
 #define WINDOW_SPLIT_HEIGHT ((Height - EXPLORER_WINDOW_POS_Y ) / 2 ) + EXPLORER_WINDOW_POS_Y// Высота серидины окна сплит 548
-
+#define OFFSET100 EXPLORER_WINDOW_WIDTH / 3 //101
+#define OFF
 
 //Функция выводит элемент загруженный на сцену
 void addSceneTreeItem( ISceneNode * parent, IGUITreeViewNode* nodeParent){ 
@@ -188,6 +198,18 @@ void OnMenuItemSelected( IGUIContextMenu* menu ){
 	}
 }
 
+ // float переводит в const wchar_t
+const wchar_t* ftows(float value) {
+	char vOutChar [20];
+	wchar_t text0 [20];
+
+	sprintf(vOutChar, "%f", value);
+	mbstowcs(text0,vOutChar,sizeof(vOutChar));
+	
+	const wchar_t *text1 = text0;
+
+	return text1;
+}
 
 // Создаем класс для отлавливания обработки всех событий
 class MyEventReceiver : public IEventReceiver
@@ -240,6 +262,83 @@ public:
 					// cout << "\n\tCOORDS: " << CurrentObject.getCoord()->X << " " << CurrentObject.getCoord()->Z << endl;
 				}
 				break;
+			// Скрул бар	
+			case EGET_SCROLL_BAR_CHANGED:
+				switch (id)
+				{
+				case GUI_ID_X_SCROLL_POS:{
+					CurrentObject.getCoord()->X = ((IGUIScrollBar*)event.GUIEvent.Caller)->getPos();
+					CurrentObject.setCoord(*CurrentObject.getCoord());
+
+					editboxPosX->setText(ftows(CurrentObject.getCoord()->X));
+					return true;
+					break;
+				}
+				case GUI_ID_Y_SCROLL_POS:{
+					CurrentObject.getCoord()->Y = ((IGUIScrollBar*)event.GUIEvent.Caller)->getPos();
+					CurrentObject.setCoord(*CurrentObject.getCoord());
+
+					editboxPosY->setText(ftows(CurrentObject.getCoord()->Y));
+					return true;
+					break;
+				}
+				case GUI_ID_Z_SCROLL_POS:{
+					CurrentObject.getCoord()->Z = ((IGUIScrollBar*)event.GUIEvent.Caller)->getPos();
+					CurrentObject.setCoord(*CurrentObject.getCoord());
+
+					editboxPosZ->setText(ftows(CurrentObject.getCoord()->Z));
+					return true;
+					break;
+				}
+				case GUI_ID_X_SCROLL_ROT:{
+					CurrentObject.getRotation()->X = ((IGUIScrollBar*)event.GUIEvent.Caller)->getPos();
+					CurrentObject.setRotation(*CurrentObject.getRotation());
+
+					editboxRotX->setText(ftows(CurrentObject.getRotation()->X));
+					return true;
+					break;
+				}
+				case GUI_ID_Y_SCROLL_ROT:{
+					CurrentObject.getRotation()->Y = ((IGUIScrollBar*)event.GUIEvent.Caller)->getPos();
+					CurrentObject.setRotation(*CurrentObject.getRotation());
+
+					editboxRotY->setText(ftows(CurrentObject.getRotation()->Y));
+					return true;
+					break;
+				}
+				case GUI_ID_Z_SCROLL_ROT:{
+					CurrentObject.getRotation()->Z = ((IGUIScrollBar*)event.GUIEvent.Caller)->getPos();
+					CurrentObject.setRotation(*CurrentObject.getRotation());
+
+					editboxRotZ->setText(ftows(CurrentObject.getRotation()->Z));
+					return true;
+					break;
+				}
+				case GUI_ID_X_SCROLL_SCALE:{
+					CurrentObject.getScale()->X = ((IGUIScrollBar*)event.GUIEvent.Caller)->getPos();
+					CurrentObject.setScale(*CurrentObject.getScale());
+
+					editboxScaleX->setText(ftows(CurrentObject.getScale()->X));
+					return true;
+					break;
+				}
+				case GUI_ID_Y_SCROLL_SCALE:{
+					CurrentObject.getScale()->Y = ((IGUIScrollBar*)event.GUIEvent.Caller)->getPos();
+					CurrentObject.setScale(*CurrentObject.getScale());
+
+					editboxScaleY->setText(ftows(CurrentObject.getScale()->Y));
+					return true;
+					break;
+				}
+				case GUI_ID_Z_SCROLL_SCALE:{
+					CurrentObject.getScale()->Z = ((IGUIScrollBar*)event.GUIEvent.Caller)->getPos();
+					CurrentObject.setScale(*CurrentObject.getScale());
+
+					editboxScaleZ->setText(ftows(CurrentObject.getScale()->Z));
+					return true;
+					break;
+				}
+				}
 			// Элементы меню
 			case EGET_MENU_ITEM_SELECTED:
 					OnMenuItemSelected( (IGUIContextMenu*)event.GUIEvent.Caller );
@@ -296,28 +395,6 @@ public:
 
 					break;
 				}
-				case GUI_ID_BUTTON_SCALE_MUL10:{
-					CurrentObject.getScale()->X = 1;
-					CurrentObject.setScale(*CurrentObject.getScale());
-					CurrentObject.getScale()->Y = 1;
-					CurrentObject.setScale(*CurrentObject.getScale());
-					CurrentObject.getScale()->Y = 1;
-					CurrentObject.setScale(*CurrentObject.getScale());
-
-					return true;
-					break;
-				}
-				case GUI_ID_BUTTON_SCALE_DIV10:{
-					CurrentObject.getScale()->X = 0.5;
-					CurrentObject.setScale(*CurrentObject.getScale());
-					CurrentObject.getScale()->Y = 0.5;
-					CurrentObject.setScale(*CurrentObject.getScale());
-					CurrentObject.getScale()->Y = 0.5;
-					CurrentObject.setScale(*CurrentObject.getScale());
-
-					return true;
-					break;
-				}
 
 				default:
 					return false;
@@ -364,7 +441,7 @@ public:
 					case GUI_ID_X_ROT:
 					    toolboxWnd = device->getGUIEnvironment()->getRootGUIElement()->getElementFromId(GUI_ID_DIALOG_ROOT_WINDOW, true);
 						text = toolboxWnd->getElementFromId(GUI_ID_X_ROT, true)->getText();
-						
+
 						CurrentObject.getRotation()->X = wcstol(text, NULL, 10); // осуществляет перевод из const wchar_t в int
 						CurrentObject.setRotation(*CurrentObject.getRotation());
 						break;
@@ -498,33 +575,76 @@ void createToolBox()
 
 
     // Location (Расположение)
-    env->addStaticText(L"Location:", rect<s32>( offset50 / 2 , offset50 / 2, 80, 45), false, false, wnd);
+    env->addStaticText(L"Location:", rect<s32>( 35, 25, 80, 45), false, false, wnd);
 	env->addStaticText(L"X:", core::rect<s32>(10,52,18,70), false, false, wnd);
-    env->addEditBox(L"1.0", rect<s32>(25 , 50, 85, 70), true, wnd, GUI_ID_X_POS);
-	env->addStaticText(L"Y:", core::rect<s32>(15,80,20,100), false, false, wnd);
-    env->addEditBox(L"1.0", rect<s32>(25, 80, 85, 100), true, wnd, GUI_ID_Y_POS);
-	env->addStaticText(L"Z:", core::rect<s32>(15,110,20,130), false, false, wnd);
-    env->addEditBox(L"1.0", rect<s32>(25, 110, 85, 130), true, wnd, GUI_ID_Z_POS);
+	editboxPosX = env->addEditBox(L"1.0", rect<s32>(25 , 50, 85, 70), true, wnd, GUI_ID_X_POS);
+	env->addStaticText(L"Y:", core::rect<s32>(10,82,18,100), false, false, wnd);
+    editboxPosY = env->addEditBox(L"1.0", rect<s32>(25, 80, 85, 100), true, wnd, GUI_ID_Y_POS);
+	env->addStaticText(L"Z:", core::rect<s32>(10,112,18,130), false, false, wnd);
+    editboxPosZ = env->addEditBox(L"1.0", rect<s32>(25, 110, 85, 130), true, wnd, GUI_ID_Z_POS);
+
+	IGUIScrollBar* scrollbarPosX = env->addScrollBar(true,core::rect<s32>(100 , 50, 280, 70), wnd, GUI_ID_X_SCROLL_POS);
+	scrollbarPosX->setMin(-100);
+	scrollbarPosX->setMax(100);
+	scrollbarPosX->setPos(0);
+	IGUIScrollBar* scrollbarPosY = env->addScrollBar(true,core::rect<s32>(100 , 80, 280, 100), wnd, GUI_ID_Y_SCROLL_POS);
+	scrollbarPosY->setMin(-100);
+	scrollbarPosY->setMax(100);
+	scrollbarPosY->setPos(0);
+	IGUIScrollBar* scrollbarPosZ = env->addScrollBar(true,core::rect<s32>(100 , 110, 280, 130), wnd, GUI_ID_Z_SCROLL_POS);
+	scrollbarPosZ->setMin(-100);
+	scrollbarPosZ->setMax(100);
+	scrollbarPosZ->setPos(0);
 
 	// Location Rotation (Расположение :: Варащение)
-    // env->addStaticText(L"Rotation:", rect<s32>(25, 135, 80, 155), false, false, wnd);
-    // env->addEditBox(L"1.0", rect<s32>(x0,30+  OFFSET ,x0 + w,50 + OFFSET ), true, wnd, GUI_ID_X_ROT);
+    env->addStaticText(L"Rotation:", rect<s32>( 35, 135, 80, 155), false, false, wnd);
+    env->addStaticText(L"X:", core::rect<s32>(10,162,18,180), false, false, wnd);
+	editboxRotX = env->addEditBox(L"1.0", rect<s32>(25 , 160, 85, 180), true, wnd, GUI_ID_X_ROT);
+	env->addStaticText(L"Y:", core::rect<s32>(10,192,18,210), false, false, wnd);
+    editboxRotY = env->addEditBox(L"1.0", rect<s32>(25 , 190, 85, 210), true, wnd, GUI_ID_Y_ROT);
+	env->addStaticText(L"Z:", core::rect<s32>(10,222,18,240), false, false, wnd);
+    editboxRotZ = env->addEditBox(L"1.0", rect<s32>(25 , 220, 85, 240), true, wnd, GUI_ID_Z_ROT);
 
-    // env->addEditBox(L"1.0", rect<s32>(x0 + w + between,30 + OFFSET ,x0 + w + between + w,50 + OFFSET ), true, wnd, GUI_ID_Y_ROT);
-
-    // env->addEditBox(L"1.0", rect<s32>(x0 + w + between + w + between,30 + OFFSET , x0 + w + between + w + between + w  ,50 + OFFSET), true, wnd, GUI_ID_Z_ROT);
-
-	// // Location Scale (Расположение :: Маштаб)
-    // env->addStaticText(L"Scale:", rect<s32>(5,55 + OFFSET ,100,75 + OFFSET ), false, false, wnd);
-    // env->addEditBox(L"1.0", rect<s32>(x0,55 +  OFFSET ,x0 + w,75 + OFFSET ), true, wnd, GUI_ID_X_SCALE);
-
-    // env->addEditBox(L"1.0", rect<s32>(x0 + w + between,55 + OFFSET ,x0 + w + between + w,75 + OFFSET ), true, wnd, GUI_ID_Y_SCALE);
-
-    // env->addEditBox(L"1.0", rect<s32>(x0 + w + between + w + between,55 + OFFSET , x0 + w + between + w + between + w  ,75 + OFFSET), true, wnd, GUI_ID_Z_SCALE);
+	IGUIScrollBar* scrollbarRotX = env->addScrollBar(true,core::rect<s32>(100 , 160, 280, 180), wnd, GUI_ID_X_SCROLL_ROT);
+	scrollbarRotX->setMin(-360);
+	scrollbarRotX->setMax(360);
+	scrollbarRotX->setPos(0);
+	IGUIScrollBar* scrollbarRotY = env->addScrollBar(true,core::rect<s32>(100 , 190, 280, 210), wnd, GUI_ID_Y_SCROLL_ROT);
+	scrollbarRotY->setMin(-360);
+	scrollbarRotY->setMax(360);
+	scrollbarRotY->setPos(0);
+	IGUIScrollBar* scrollbarRotZ = env->addScrollBar(true,core::rect<s32>(100 , 220, 280, 240), wnd, GUI_ID_Z_SCROLL_ROT);
+	scrollbarRotZ->setMin(-360);
+	scrollbarRotZ->setMax(360);
+	scrollbarRotZ->setPos(0);
+	// Location Scale (Расположение :: Маштаб)
     
-	// Scale 10 /10 buttons
-	env->addButton(rect<s32>(100,200,150,250), wnd, GUI_ID_BUTTON_SCALE_MUL10, L"* 10");
-	env->addButton(rect<s32>(100,300,150,350), wnd, GUI_ID_BUTTON_SCALE_DIV10, L"* 0.1");
+	env->addStaticText(L"Scale:", rect<s32>(35, 245, 80, 265), false, false, wnd);
+    env->addStaticText(L"X:", core::rect<s32>(10,272,18,290), false, false, wnd);
+	editboxScaleX = env->addEditBox(L"1.0", rect<s32>(25 , 270, 85, 290), true, wnd, GUI_ID_X_SCALE);
+	env->addStaticText(L"Y:", core::rect<s32>(10,302,18,320), false, false, wnd);
+    editboxScaleY = env->addEditBox(L"1.0", rect<s32>(25 , 300, 85, 320), true, wnd, GUI_ID_Y_SCALE);
+	env->addStaticText(L"Z:", core::rect<s32>(10,332,18,350), false, false, wnd);
+    editboxScaleZ = env->addEditBox(L"1.0", rect<s32>(25 , 330, 85, 350), true, wnd, GUI_ID_Z_SCALE);
+
+    IGUIScrollBar* scrollbarScaleX = env->addScrollBar(true,core::rect<s32>(100 , 270, 280, 290), wnd, GUI_ID_X_SCROLL_SCALE);
+	scrollbarScaleX->setMin(-10);
+	scrollbarScaleX->setMax(10);
+	scrollbarScaleX->setPos(0);
+	scrollbarScaleX->setLargeStep(1);
+	scrollbarScaleX->setSmallStep(1);
+	IGUIScrollBar* scrollbarScaleY = env->addScrollBar(true,core::rect<s32>(100 , 300, 280, 320), wnd, GUI_ID_Y_SCROLL_SCALE);
+	scrollbarScaleY->setMin(-10);
+	scrollbarScaleY->setMax(10);
+	scrollbarScaleY->setPos(0);
+	scrollbarScaleY->setLargeStep(1);
+	scrollbarScaleY->setSmallStep(1);
+	IGUIScrollBar* scrollbarScaleZ = env->addScrollBar(true,core::rect<s32>(100 , 330, 280, 350), wnd, GUI_ID_Z_SCROLL_SCALE);
+	scrollbarScaleZ->setMin(-10);
+	scrollbarScaleZ->setMax(10);
+	scrollbarScaleZ->setPos(0);
+	scrollbarScaleZ->setLargeStep(1);
+	scrollbarScaleZ->setSmallStep(1);
 
 	CurrentObject.updatePosInfo();
 }
@@ -685,6 +805,8 @@ int main(int argc,char **argv){
 
 	cout << "\t Widht   :" << Width << endl;
 	cout << "\t Height   :" << Height << endl;
+	cout << "\t OFFSET100   :" << OFFSET100 << endl;
+	cout << "\t OFFSET   :" << OFFSET << endl;
 
 
 
