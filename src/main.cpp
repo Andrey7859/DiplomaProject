@@ -26,6 +26,10 @@ IGUIEditBox* editboxScaleX;
 IGUIEditBox* editboxScaleY;
 IGUIEditBox* editboxScaleZ;
 
+IGUIScrollBar* scrollbarPosX;
+IGUIScrollBar* scrollbarPosY;
+IGUIScrollBar* scrollbarPosZ;
+
 ICameraSceneNode *camera[4]={0,0,0,0};
 
 const wchar_t* _path;
@@ -583,15 +587,15 @@ void createToolBox()
 	env->addStaticText(L"Z:", core::rect<s32>(10,112,18,130), false, false, wnd);
     editboxPosZ = env->addEditBox(L"1.0", rect<s32>(25, 110, 85, 130), true, wnd, GUI_ID_Z_POS);
 
-	IGUIScrollBar* scrollbarPosX = env->addScrollBar(true,core::rect<s32>(100 , 50, 280, 70), wnd, GUI_ID_X_SCROLL_POS);
+	scrollbarPosX = env->addScrollBar(true,core::rect<s32>(100 , 50, 280, 70), wnd, GUI_ID_X_SCROLL_POS);
 	scrollbarPosX->setMin(-100);
 	scrollbarPosX->setMax(100);
 	scrollbarPosX->setPos(0);
-	IGUIScrollBar* scrollbarPosY = env->addScrollBar(true,core::rect<s32>(100 , 80, 280, 100), wnd, GUI_ID_Y_SCROLL_POS);
+	scrollbarPosY = env->addScrollBar(true,core::rect<s32>(100 , 80, 280, 100), wnd, GUI_ID_Y_SCROLL_POS);
 	scrollbarPosY->setMin(-100);
 	scrollbarPosY->setMax(100);
 	scrollbarPosY->setPos(0);
-	IGUIScrollBar* scrollbarPosZ = env->addScrollBar(true,core::rect<s32>(100 , 110, 280, 130), wnd, GUI_ID_Z_SCROLL_POS);
+	scrollbarPosZ = env->addScrollBar(true,core::rect<s32>(100 , 110, 280, 130), wnd, GUI_ID_Z_SCROLL_POS);
 	scrollbarPosZ->setMin(-100);
 	scrollbarPosZ->setMax(100);
 	scrollbarPosZ->setPos(0);
@@ -643,8 +647,14 @@ void createToolBox()
 	scrollbarScaleZ->setMin(-10);
 	scrollbarScaleZ->setMax(10);
 	scrollbarScaleZ->setPos(0);
-	scrollbarScaleZ->setLargeStep(1);
+	scrollbarScaleZ->setLargeStep(1); // диапазон шага стрелки
 	scrollbarScaleZ->setSmallStep(1);
+
+	// IGUIImage ImageTexture(env, wnd, -1,rect<s32>(10,360, 178, 528));
+	// IGUIImage ImageTexture()
+	// IGUIImage* clown;
+	// clown->setImage()
+	// ImageTexture.setImage("../media/irrlichtlogo2.png")
 
 	CurrentObject.updatePosInfo();
 }
@@ -759,14 +769,17 @@ void splitscreen() {
 	//Правая верхняя часть топ 
 	smgr->setActiveCamera(camera[1]);
 	driver->setViewPort(rect<s32>( WINDOW_SPLIT_WIDTH, EXPLORER_WINDOW_POS_Y, Width, WINDOW_SPLIT_HEIGHT));
+	camera[1]->setTarget(*(CurrentObject.getCoord()));
 	smgr->drawAll();
 	//Нижняя левая часть фронт
 	smgr->setActiveCamera(camera[2]);
 	driver->setViewPort(rect<s32>( EXPLORER_WINDOW_WIDTH, WINDOW_SPLIT_HEIGHT, WINDOW_SPLIT_WIDTH, Height));
+	camera[2]->setTarget(*(CurrentObject.getCoord()));
 	smgr->drawAll();
 	// Нижняя првая часть с лева 
 	smgr->setActiveCamera(camera[3]);
 	driver->setViewPort(rect<s32>( WINDOW_SPLIT_WIDTH, WINDOW_SPLIT_HEIGHT, Width, Height));
+	camera[3]->setTarget(*(CurrentObject.getCoord()));
 	smgr->drawAll();
 }
 
@@ -889,7 +902,10 @@ int main(int argc,char **argv){
 	CurrentObject = Objects[0];
 
 	//Основная
-	camera[0] = smgr->addCameraSceneNode(0, *(CurrentObject.getCoord()) + vector3df(0, 30, -40), *(CurrentObject.getCoord()));
+	// camera[0] = smgr->addCameraSceneNode(0, *(CurrentObject.getCoord()) + vector3df(0, 30, -40), *(CurrentObject.getCoord()));
+    // camera[0]->setFarValue(200000.f); Устанавливает значение дальней плоскости отсечения (по умолчанию: 2000.0f).
+	camera[0] = smgr->addCameraSceneNodeMaya();
+    camera[0]->setTarget(*(CurrentObject.getCoord()));
 	// Top
 	camera[1] = smgr->addCameraSceneNode(0, vector3df(0,50,0), vector3df(0,0,0));
 	//Front
