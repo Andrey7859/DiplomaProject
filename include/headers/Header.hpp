@@ -34,8 +34,11 @@ using namespace gui;
 #define BUFSIZE 255
 
 IrrlichtDevice *device;
+IVideoDriver* driver;
+ISceneManager* smgr;
 IGUITreeView* SceneTree;
 IGUIEnvironment* env;
+
 
 // Определяем значения, которые мы будем использовать для идентификации отдельных элементов управления GUI.
 enum 
@@ -114,5 +117,4 @@ enum
 	GUI_ID_ABOUT
 	
 };
-
 int currentViewState = GUI_ID_PERSPECTIVE_BUTTON;
