@@ -35,6 +35,7 @@ using namespace gui;
 
 IrrlichtDevice *device;
 IGUITreeView* SceneTree;
+IGUIEnvironment* env;
 
 // Определяем значения, которые мы будем использовать для идентификации отдельных элементов управления GUI.
 enum 

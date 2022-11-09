@@ -40,6 +40,7 @@ Model CurrentObject;
 std::vector<Model> Objects;
 
 ISceneNode* node;
+IGUIListBox* MapList;
 
 int itemCounter = 1;
 int objectsCounter = 0;
@@ -95,7 +96,7 @@ void addSceneTreeItem( ISceneNode * parent, IGUITreeViewNode* nodeParent){
 		
 		// cout << "\n\tname_split:  " << (*it)->getName() << endl;
 		node = nodeParent->addChildBack( msg, 0, imageIndex ); //Добавляет ребенка в конец списка элеметов родтеля(Список является частью дерева)
-
+		// MapList->addItem(msg, imageIndex);
 		// wchar_t vOut[12];
 		// _itow_s(objectsCounter, vOut, sizeof(vOut)/2, 10);
 		
@@ -132,21 +133,59 @@ void addSceneTreeItem( ISceneNode * parent, IGUITreeViewNode* nodeParent){
 	// cout << "\t ItemCounter SMGR   " << smgr->getSceneNodeFromName("Camera_1", *it) << endl; 
 
 }
+
+void addMapListItem(){
+    wchar_t msg[128];
+	s32 imageIndex;
+    ISceneNode* node;
+
+	for (int i = 0; i < Objects.size(); i++)
+	{
+		node = Objects[i].getModel();
+		switch (node->getType())
+		{
+			case ESNT_Q3SHADER_SCENE_NODE: imageIndex = 0; node->setName("Q3Shader"); ; break;
+			case ESNT_CAMERA: imageIndex = 1; node->setName("Camera"); break;
+			case ESNT_EMPTY: imageIndex = 2; node->setName("Empty"); break;
+			case ESNT_MESH: imageIndex = 3; node->setName("Model"); break;
+			case ESNT_OCTREE: imageIndex = 3; node->setName("Octree"); break;
+			case ESNT_ANIMATED_MESH: imageIndex = 4; node->setName("AninMesh"); break;
+			case ESNT_SKY_BOX: imageIndex = 5; node->setName("Skybox"); break;
+			case ESNT_BILLBOARD: imageIndex = 6; node->setName("Billboard"); break;
+			case ESNT_PARTICLE_SYSTEM: imageIndex = 7; node->setName("Particle_System"); break;
+			case ESNT_TEXT: imageIndex = 8; node->setName("Text"); break;
+			default:imageIndex = -1; break;
+		}
+
+    	swprintf ( msg, 128, L"%hs_%d", Objects[i].getModel()->getName(),itemCounter);
+		cout << "Add map list  " << Objects[i].getModel()->getName() << endl;
+		itemCounter++;
+	}
+	
+
+	MapList->addItem(msg);
+
+
+}
+
+
 //Создание подокна отображеия на сцене Scene Explorer
 void addSceneExplorerTree(IGUITab* t1){	
 
-    SceneTree = device->getGUIEnvironment()->addTreeView(rect<s32>( 0, OFFSET, EXPLORER_WINDOW_WIDTH, PROPERTIES_WINDOW_POS_H ), t1, -1, true, true, false );
-    SceneTree->setToolTipText ( L"Show the current Scenegraph" );
-    SceneTree->getRoot()->clearChildren();
+    // SceneTree = device->getGUIEnvironment()->addTreeView(rect<s32>( 0, OFFSET, EXPLORER_WINDOW_WIDTH, PROPERTIES_WINDOW_POS_H ), t1, -1, true, true, false );
+    MapList = env->addListBox ( rect<s32>( 0, 0, EXPLORER_WINDOW_WIDTH , PROPERTIES_WINDOW_POS_H), t1, -1, true  );
+	MapList->setToolTipText ( L"Show the current Scenegraph" );
+	addMapListItem();
+    // SceneTree->getRoot()->clearChildren();
 	itemCounter = 1;
-    addSceneTreeItem (device->getSceneManager()->getRootSceneNode(), SceneTree->getRoot()); 
+    // addSceneTreeItem (device->getSceneManager()->getRootSceneNode(), SceneTree->getRoot()); 
 
-	IGUIImageList* imageList = device->getGUIEnvironment()->createImageList(device->getVideoDriver()->getTexture ( "../media/iconlist.png" ), dimension2di( 32, 32 ), true );
+	// IGUIImageList* imageList = device->getGUIEnvironment()->createImageList(device->getVideoDriver()->getTexture ( "../media/iconlist.png" ), dimension2di( 32, 32 ), true );
 
-    if ( imageList ){
-        SceneTree->setImageList( imageList );
-        imageList->drop ();
-    }
+    // if ( imageList ){
+    //     // SceneTree->setImageList( imageList );
+    //     imageList->drop ();
+    // }
 
 }
 
@@ -247,7 +286,7 @@ public:
 					// ptr = tmp->getData();
 					// counter_ptr = (int*)ptr;
 					// counter = *counter_ptr;
-					const wchar_t* text = tmp->getText();
+					// const wchar_t* text = tmp->getText();
 					// int counter = _wtoi(text);
 
 
@@ -411,10 +450,10 @@ public:
 					IGUIFileOpenDialog* dialog = (IGUIFileOpenDialog*)event.GUIEvent.Caller;
 					tmp->LoadModel(core::stringc(dialog->getFileName()).c_str());
 					Objects.push_back(*tmp);
-					SceneTree->getRoot()->clearChildren();
+					// SceneTree->getRoot()->clearChildren();
 					itemCounter = 1;
-					addSceneTreeItem(device->getSceneManager()->getRootSceneNode(), SceneTree->getRoot());
-					
+					// addSceneTreeItem(device->getSceneManager()->getRootSceneNode(), SceneTree->getRoot());
+					addMapListItem();
 				}
 				break;
 			case EGET_EDITBOX_ENTER:
@@ -740,10 +779,10 @@ void addContentBrowserTreeItem(IGUITreeViewNode* nodeParent, std::string path){
 void addContentBrowserTree(IGUITab* t2) {
 	// IGUITreeView* SceneTree;
 
-    SceneTree = device->getGUIEnvironment()->addTreeView(rect<s32>( 0, OFFSET, EXPLORER_WINDOW_WIDTH, PROPERTIES_WINDOW_POS_H ), t2, -1, true, true, false );
-    SceneTree->setToolTipText ( L"Show all files and folders into project" );
-    SceneTree->getRoot()->clearChildren();
-    addContentBrowserTreeItem (SceneTree->getRoot(), ".");
+    // SceneTree = device->getGUIEnvironment()->addTreeView(rect<s32>( 0, OFFSET, EXPLORER_WINDOW_WIDTH, PROPERTIES_WINDOW_POS_H ), t2, -1, true, true, false );
+    // SceneTree->setToolTipText ( L"Show all files and folders into project" );
+    // SceneTree->getRoot()->clearChildren();
+    // addContentBrowserTreeItem (SceneTree->getRoot(), ".");
 
 	// IGUIImageList* imageList = device->getGUIEnvironment()->createImageList(device->getVideoDriver()->getTexture ( "media/iconlist.png" ), dimension2di( 32, 32 ), true );
 
@@ -843,6 +882,8 @@ int main(int argc,char **argv){
 	IVideoDriver* driver = device->getVideoDriver(); // Видеодрайвер для отрисовки
 	ISceneManager* smgr = device->getSceneManager(); // создает объекты управляет перемещает менеджер делает управление
 	IGUIEnvironment* guienv = device->getGUIEnvironment(); //Список всех виджитов
+	env = device->getGUIEnvironment();
+
 
 	IGUISkin* skin = guienv->getSkin();
 	// IGUIFont* font = guienv->getFont("../media/fontlucida.png");
