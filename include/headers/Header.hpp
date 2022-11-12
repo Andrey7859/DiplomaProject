@@ -1,5 +1,6 @@
 #pragma once
 
+#include "headers/Model.hpp"
 #include <irrlicht.h>
 #include <wchar.h>
 #include <stdlib.h>
@@ -16,12 +17,8 @@
 #include <unistd.h>
 #include <stdio.h>
 
-
-
 using namespace std;
-
 using namespace irr;
-
 using namespace core;
 using namespace scene;
 using namespace video;
@@ -30,7 +27,6 @@ using namespace gui;
 
 #define BUTTON_SIZE 32
 #define OFFSET ((Height / 10) - (BUTTON_SIZE * 2)) / 2
-
 #define BUFSIZE 255
 
 IrrlichtDevice *device;
@@ -38,17 +34,12 @@ IVideoDriver* driver;
 ISceneManager* smgr;
 IGUITreeView* SceneTree;
 IGUIEnvironment* env;
-
+ICameraSceneNode *camera[4]={0,0,0,0};
 
 // Определяем значения, которые мы будем использовать для идентификации отдельных элементов управления GUI.
 enum 
 {
-	GUI_ID_QUIT_BUTTON = 101,
-	GUI_ID_NEW_WINDOW_BUTTON,
-	GUI_ID_FILE_OPEN_BUTTON,
-	GUI_ID_TRANSPARENCY_SCROLL_BAR,
-
-	GUI_ID_DIALOG_ROOT_WINDOW,
+	GUI_ID_DIALOG_ROOT_WINDOW = 101,
 	GUI_ID_DIALOG_ROOT_2_WINDOW,
 	GUI_ID_DIALOG_ROOT_3_WINDOW,
 
@@ -103,7 +94,6 @@ enum
 	
 	GUI_ID_VIEW,
 	GUI_ID_CAMERA,
-
 
 	GUI_ID_PERSPECTIVE,
 	GUI_ID_TOP,

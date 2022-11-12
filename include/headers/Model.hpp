@@ -4,10 +4,6 @@
 #define SIZE_STATIC 17
 #define SIZE_ANIM 6
 
-std::string static_str[SIZE_STATIC] = { ".irr", ".irrmesh", ".3ds", ".obj", ".lwo", ".xml", ".dae", ".mesh", ".my3D", ".lmts", 
-									".bsp", ".dmf", ".oct", ".csm", ".stl", ".ply"};
-std::string anim_str[SIZE_ANIM] = { ".b3d", ".x", ".ms3d", ".md2", ".md3" };
-
 core::stringc StartUpModelFile = "../media/sydney.md2";
 // core::stringc StartUpModelFile = "../media/dwarf.x";
 
