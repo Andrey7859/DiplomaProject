@@ -7,8 +7,8 @@ EXT =
 
 # general compiler settings
 CPPFLAGS = -I./include -I/usr/X11R6/include 
-CXXFLAGS = -O3 -ffast-math -std=c++17
-#CXXFLAGS = -g -Wall
+CXXFLAGS = -O3 -ffast-math -std=c++17 -g
+# CXXFLAGS = -g -Wall
 
 #default target is Linux
 all: all_linux

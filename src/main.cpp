@@ -47,13 +47,16 @@ int main(int argc,char **argv){
 	Model* tmp = new Model;
 	tmp->LoadModel(StartUpModelFile.c_str());
 	Objects.push_back(*tmp);
+	// Objects.push_back(*tmp);
 	CurrentObject = Objects[0];
+
 
  	createCameras();
 	createButtonsField();
 	createToolset();
 	createExplorer();
-	
+	MapList->setSelected(0); // Выделяет модель при запуске
+
 	// Создаем объект receiver на основе класса MyEventReceiver.
 					//Накопитель
 	MyEventReceiver receiver;

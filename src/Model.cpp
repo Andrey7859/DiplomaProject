@@ -1,41 +1,4 @@
-#pragma once
-#include "headers/Header.hpp"
-
-core::stringc StartUpModelFile = "../media/sydney.md2";
-core::stringw Caption;
-bool Octree=false;
-bool UseLight=false;
-
-class Model
-{
-private:
-	ISceneNode* _Model = 0;
-	vector3df Coord;
-	vector3df Rotation;
-	vector3df Scale;
-public:
-    Model();
-    void LoadModel(const c8* fn);
-	ISceneNode* getModel();
-	void updatePosInfo();
-	vector3df* getCoord();
-	vector3df* getRotation();
-	vector3df* getScale();
-	void setCoord(vector3df NewCoord);
-	void setRotation(vector3df NewRot);
-	void setScale(vector3df NewScale);
-	Model& operator=(const Model& right) {
-        //проверка на самоприсваивание
-        if (this == &right) {
-            return *this;
-        }
-		_Model = right._Model;
-		Coord = right.Coord;
-		Rotation = right.Rotation;
-		Scale = right.Scale;
-        return *this;
-    }
-};
+#include "headers/Model.hpp"
 
 Model::Model()
 {
@@ -98,8 +61,6 @@ void Model::LoadModel(const c8* fn) {
 			_Model = outNodes[0];
 		return;
 	}
-
-	// auto m = parce(extension);
 
 	// IAnimatedMesh* m = device->getSceneManager()->getMesh( filename.c_str() );
 	IMesh* m = device->getSceneManager()->getMesh( filename.c_str() );
@@ -194,5 +155,6 @@ void Model::setScale(vector3df NewScale){
 	_Model->setScale(Scale);
 }
 
-
-
+Model::~Model()
+{
+}

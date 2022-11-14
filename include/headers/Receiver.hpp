@@ -16,6 +16,7 @@ void OnMenuItemSelected( IGUIContextMenu* menu ){
 	break;
 
 	case GUI_ID_DELETE_MODEL: // Удалить модель 
+		
 	break;
 
 	case GUI_ID_QUIT: // Выход из программы
@@ -81,37 +82,14 @@ class MyEventReceiver : public IEventReceiver{
 				IGUIElement* toolboxWnd;
 				const wchar_t* text;
 				wchar_t* end;
+				
+				// Выбирает объект при нажатии
+				if ( event.GUIEvent.Caller == MapList && event.GUIEvent.EventType == gui::EGET_LISTBOX_SELECTED_AGAIN ){
+                s32 selected = MapList->getSelected();
+				CurrentObject = Objects[selected];
+				}
 
 				switch(event.GUIEvent.EventType){
-					case EGET_TREEVIEW_NODE_SELECT:{
-							// void * ptr;
-							// int* counter_ptr;
-							// unsigned long long int counter;
-							
-							IGUITreeViewNode* tmp = SceneTree->getRoot()->getFirstChild();
-							// ptr = tmp->getData();
-							// counter_ptr = (int*)ptr;
-							// counter = *counter_ptr;
-							// const wchar_t* text = tmp->getText();
-							// int counter = _wtoi(text);
-
-
-							// for (int i = 0; i < SceneTree->getChildren().size(); i++) {
-							// 	if(tmp->getData() == SceneTree->getSelected()->getData()) {
-							// 		ptr = SceneTree->getSelected()->getData();
-							// 		counter_ptr = reinterpret_cast<int*>(ptr);
-							// 		CurrentObject = Objects[counter];
-							// 		break;
-							// 	}
-
-							// 	tmp = tmp->getNextSibling();
-							// }
-
-							// cout << "\n\tcounter: " << counter << endl;
-							// cout << "\n\tCOORDS: " << CurrentObject.getCoord()->X << " " << CurrentObject.getCoord()->Z << endl;
-					}
-					break;
-
 					// Скрул бар	
 					case EGET_SCROLL_BAR_CHANGED:
 						switch (id){
@@ -212,6 +190,20 @@ class MyEventReceiver : public IEventReceiver{
 								break;
 							}
 
+							case GUI_ID_DELETE_BUTTON:{
+								s32 selected = MapList->getSelected();
+								swap(Objects[selected], Objects.back());
+								CurrentObject = Objects[0];
+								Objects.back().getModel()->remove();
+								Objects.erase(Objects.end()); // Удаляет элемент из вектора
+								
+								MapList->removeItem(selected); // Удаляет элемент из GUI
+								MapList->setSelected(0);
+								
+								return true;
+								break;
+							}
+
 							case GUI_ID_PERSPECTIVE_BUTTON:{
 								currentViewState = GUI_ID_PERSPECTIVE_BUTTON;
 
@@ -273,8 +265,10 @@ class MyEventReceiver : public IEventReceiver{
 						IGUIFileOpenDialog* dialog = (IGUIFileOpenDialog*)event.GUIEvent.Caller;
 						tmp->LoadModel(core::stringc(dialog->getFileName()).c_str());
 						Objects.push_back(*tmp);
+						CurrentObject = Objects[Objects.size()-1];
 
 						addMapListItem();
+						MapList->setSelected(MapList->getChildren().getSize());
 					}
 					break;
 
@@ -361,6 +355,5 @@ class MyEventReceiver : public IEventReceiver{
 			}
 
 		return false;
-		}
-
+	}
 };
