@@ -189,6 +189,15 @@ class MyEventReceiver : public IEventReceiver{
 								return true;
 								break;
 							}
+							
+							case GUI_ID_SAVE_BUTTON:{
+								if (false == smgr->saveScene("../save/SaveProject.irr", 0, 0)){
+								// smgr->saveScene("SaveProject.irr", 0, 0);
+									cout << "Error. Can't save" << endl;}
+									
+								return true;
+								break;
+							}
 
 							case GUI_ID_DELETE_BUTTON:{
 								s32 selected = MapList->getSelected();
