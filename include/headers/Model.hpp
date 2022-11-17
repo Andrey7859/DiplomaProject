@@ -21,6 +21,7 @@ public:
 	vector3df* getCoord();
 	vector3df* getRotation();
 	vector3df* getScale();
+	void setModel(ISceneNode* NewModel);
 	void setCoord(vector3df NewCoord);
 	void setRotation(vector3df NewRot);
 	void setScale(vector3df NewScale);
@@ -33,9 +34,12 @@ public:
 		Coord = right.Coord;
 		Rotation = right.Rotation;
 		Scale = right.Scale;
+		
         return *this;
     }
 };
+
+std::vector<Model> Objects;
 
 Model::Model()
 {
@@ -89,16 +93,7 @@ void Model::LoadModel(const c8* fn) {
 
 	_Model = 0;
 
-	if (extension==".irr")
-	{
-		core::array<scene::ISceneNode*> outNodes;
-		device->getSceneManager()->loadScene(filename);
-		device->getSceneManager()->getSceneNodesFromType(scene::ESNT_ANIMATED_MESH, outNodes);
-		if (outNodes.size())
-			_Model = outNodes[0];
-		return;
-	}
-
+// ________________________________________________________________________
 	// auto m = parce(extension);
 
 	// IAnimatedMesh* m = device->getSceneManager()->getMesh( filename.c_str() );
@@ -170,6 +165,10 @@ vector3df* Model::getScale(){
 	return &Scale;
 }
 
+void Model::setModel(ISceneNode* NewModel){
+	_Model = NewModel;
+}
+
 void Model::setCoord(vector3df NewCoord){
 	Coord.X = NewCoord.X;
 	Coord.Y = NewCoord.Y;
@@ -193,6 +192,3 @@ void Model::setScale(vector3df NewScale){
 
 	_Model->setScale(Scale);
 }
-
-
-

@@ -11,6 +11,11 @@ void OnMenuItemSelected( IGUIContextMenu* menu ){
 	case GUI_ID_OPEN_MODEL: // Добавить новую модель
 		env->addFileOpenDialog(L"Please choose a file.", true, 0, -1, true);
 	break;
+	
+	case GUI_ID_LOAD_SCENE: // Загрузить сцену
+		env->addFileOpenDialog(L"Please choose scene.", true, 0, 1, true);
+	
+	break;
 
 	case GUI_ID_SAVE_MODEL: // Сохранение
 	break;
@@ -270,14 +275,34 @@ class MyEventReceiver : public IEventReceiver{
 					break;
 					
 					case EGET_FILE_SELECTED:{
-						Model* tmp = new Model; 
 						IGUIFileOpenDialog* dialog = (IGUIFileOpenDialog*)event.GUIEvent.Caller;
-						tmp->LoadModel(core::stringc(dialog->getFileName()).c_str());
-						Objects.push_back(*tmp);
-						CurrentObject = Objects[Objects.size()-1];
+
+						if (id == -1){
+							Model* tmp = new Model; 
+							tmp->LoadModel(core::stringc(dialog->getFileName()).c_str());
+							Objects.push_back(*tmp);
+						}
+						
+						if (id == 1){
+							Objects.clear();
+							smgr->clear();
+							core::array<scene::ISceneNode*> outNodes;
+							device->getSceneManager()->loadScene(core::stringc(dialog->getFileName()).c_str());
+							device->getSceneManager()->getSceneNodesFromType(scene::ESNT_MESH, outNodes);
+
+							if (outNodes.size()){
+								for (int i = 0; i < outNodes.size(); i++){
+									Model* tmp = new Model; 
+									tmp->setModel(outNodes[i]);
+									Objects.push_back(*tmp);
+								}
+							}
+						}
+
+						CurrentObject = Objects[Objects.size()-1]; // выбор последнего объекта
 
 						addMapListItem();
-						MapList->setSelected(MapList->getChildren().getSize());
+						MapList->setSelected(MapList->getChildren().getSize()); // выделяет объект
 					}
 					break;
 

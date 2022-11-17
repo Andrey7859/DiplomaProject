@@ -4,7 +4,6 @@
 
 int Width;
 int Height;
-std::vector<Model> Objects;
 int itemCounter = 1;
 IGUIListBox* MapList; // Структура данных список
 bool showDebug = false; // Для Wareframe и  BBox

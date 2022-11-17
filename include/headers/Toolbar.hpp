@@ -13,6 +13,8 @@ void createMenu(){
 	gui::IGUIContextMenu* submenu;
 	submenu = menu->getSubMenu(0);
 	submenu->addItem(L"Open Model File", GUI_ID_OPEN_MODEL);
+	submenu->addItem(L"Open Scene File", GUI_ID_LOAD_SCENE);
+	submenu->addSeparator();
 	submenu->addItem(L"Save", GUI_ID_SAVE_MODEL);
 	submenu->addItem(L"Delete", GUI_ID_DELETE_MODEL);
 	submenu->addSeparator();
@@ -55,7 +57,7 @@ void createButtonsField(){
     IGUIWindow* wnd = env->addWindow(rect<s32>(0, OFFSET, Width, BUTTON_SIZE + (OFFSET * 2)), false, L"Q", 0, GUI_ID_DIALOG_ROOT_2_WINDOW);
 	wnd->setDrawTitlebar(false);
 
-	// Создание кнопок 1 Блок (Добавить, сохранить, удалить)
+	// Создание кнопок 1 Блок (Добавить, сохранить, загрузить, удалить)
 	IGUIButton* addButton = env->addButton(rect<s32>(OFFSET, OFFSET / 2 , BUTTON_SIZE + OFFSET, BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_ADD_BUTTON, L" ",L"Add object");
 	addButton->setImage(driver->getTexture("../media/icon/add.jpg"));
 	
@@ -65,8 +67,7 @@ void createButtonsField(){
 	IGUIButton* deleteButton = env->addButton(rect<s32>((OFFSET * 3) + (BUTTON_SIZE * 2), OFFSET / 2, (BUTTON_SIZE + OFFSET) * 3, BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_DELETE_BUTTON, L" ", L"Delete project");
 	deleteButton->setImage(driver->getTexture("../media/icon/delete.jpg"));
 
-	// Создание кнопок 2 Блок (Выбор)
-	IGUIButton* selectButton = env->addButton(rect<s32>((OFFSET * 5) + (BUTTON_SIZE * 3), OFFSET / 2, (BUTTON_SIZE * 4) + (OFFSET * 5), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_SELECT_BUTTON, L" ", L"Select object");
+	IGUIButton* selectButton = env->addButton(rect<s32>((OFFSET * 5) + (BUTTON_SIZE * 3), OFFSET / 2, (BUTTON_SIZE * 4) + (OFFSET * 5), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_LOAD_SCENE, L" ", L"Select object");
 	selectButton->setImage(driver->getTexture("../media/icon/select.jpg"));
 
 	//Создание кнопок 3 Блок (Перспектива, топ, фронт, лефт, сплит)
