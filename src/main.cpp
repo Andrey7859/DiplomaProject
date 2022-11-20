@@ -42,20 +42,18 @@ int main(int argc,char **argv){
 		skin->setFont(env->getBuiltInFont(), EGDF_TOOLTIP);
 
 	createMenu();
-	 
-	// Model.LoadModel(StartUpModelFile.c_str());
-	Model* tmp = new Model;
-	tmp->LoadModel(StartUpModelFile.c_str());
-	Objects.push_back(*tmp);
-	// Objects.push_back(*tmp);
-	CurrentObject = Objects[0];
-
-
  	createCameras();
 	createButtonsField();
 	createToolset();
 	createExplorer();
 	MapList->setSelected(0); // Выделяет модель при запуске
+
+	for (s32 i=0; i<irr::gui::EGDC_COUNT ; ++i)
+    {
+        video::SColor col = skin->getColor((EGUI_DEFAULT_COLOR)i);
+        col.setAlpha(255);
+        skin->setColor((EGUI_DEFAULT_COLOR)i, col);
+    }
 
 	// Создаем объект receiver на основе класса MyEventReceiver.
 					//Накопитель
@@ -67,7 +65,7 @@ int main(int argc,char **argv){
 
 	while(device->run()){
 		// if (device->isWindowActive()) {
-		driver->beginScene(true, true, SColor(255,100,101,140)); // Отчищает буфер глубина каждый кадр
+		driver->beginScene(true, true, SColor(255 ,64 ,64 ,64)); // Отчищает буфер глубина каждый кадр
 
 		cameraViewState();
 

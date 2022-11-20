@@ -2,6 +2,18 @@
 #include "headers/Model.hpp"
 #include "headers/Header.hpp"
 
+//Удлаяет модель со сцены
+inline void deleteModel(){
+	s32 selected = MapList->getSelected();
+	swap(Objects[selected], Objects.back());
+	CurrentObject = Objects[0];
+	Objects.back().getModel()->remove();
+	Objects.erase(Objects.end()); // Удаляет элемент из вектора
+	
+	MapList->removeItem(selected); // Удаляет элемент из GUI
+	MapList->setSelected(0);
+}
+
 //Обработчик событий нажатий на пункты меню
 void OnMenuItemSelected( IGUIContextMenu* menu ){
 	s32 id = menu->getItemCommandId(menu->getSelectedItem());
@@ -18,10 +30,12 @@ void OnMenuItemSelected( IGUIContextMenu* menu ){
 	break;
 
 	case GUI_ID_SAVE_MODEL: // Сохранение
+		if (false == smgr->saveScene("../save/SaveProject.irr", 0, 0)){
+			cout << "Error. Can't save" << endl;}	
 	break;
 
-	case GUI_ID_DELETE_MODEL: // Удалить модель 
-		
+	case GUI_ID_DELETE_MODEL: // Удалить модель
+		deleteModel();
 	break;
 
 	case GUI_ID_QUIT: // Выход из программы
@@ -195,9 +209,15 @@ class MyEventReceiver : public IEventReceiver{
 								break;
 							}
 							
+							case GUI_ID_LOAD_BUTTON:{
+								env->addFileOpenDialog(L"Please choose scene.", true, 0, 1, true);
+
+								return true;
+								break;
+							}
+							
 							case GUI_ID_SAVE_BUTTON:{
 								if (false == smgr->saveScene("../save/SaveProject.irr", 0, 0)){
-								// smgr->saveScene("SaveProject.irr", 0, 0);
 									cout << "Error. Can't save" << endl;}
 									
 								return true;
@@ -205,15 +225,8 @@ class MyEventReceiver : public IEventReceiver{
 							}
 
 							case GUI_ID_DELETE_BUTTON:{
-								s32 selected = MapList->getSelected();
-								swap(Objects[selected], Objects.back());
-								CurrentObject = Objects[0];
-								Objects.back().getModel()->remove();
-								Objects.erase(Objects.end()); // Удаляет элемент из вектора
-								
-								MapList->removeItem(selected); // Удаляет элемент из GUI
-								MapList->setSelected(0);
-								
+								deleteModel();
+							
 								return true;
 								break;
 							}
@@ -281,11 +294,16 @@ class MyEventReceiver : public IEventReceiver{
 							Model* tmp = new Model; 
 							tmp->LoadModel(core::stringc(dialog->getFileName()).c_str());
 							Objects.push_back(*tmp);
+							itemCounter++;
+							addMapListItem();
+
 						}
 						
 						if (id == 1){
 							Objects.clear();
 							smgr->clear();
+							itemCounter = 0;
+							MapList->clear();
 							core::array<scene::ISceneNode*> outNodes;
 							device->getSceneManager()->loadScene(core::stringc(dialog->getFileName()).c_str());
 							device->getSceneManager()->getSceneNodesFromType(scene::ESNT_MESH, outNodes);
@@ -295,13 +313,13 @@ class MyEventReceiver : public IEventReceiver{
 									Model* tmp = new Model; 
 									tmp->setModel(outNodes[i]);
 									Objects.push_back(*tmp);
+									itemCounter++;
+									addMapListItem();
 								}
 							}
 						}
 
 						CurrentObject = Objects[Objects.size()-1]; // выбор последнего объекта
-
-						addMapListItem();
 						MapList->setSelected(MapList->getChildren().getSize()); // выделяет объект
 					}
 					break;

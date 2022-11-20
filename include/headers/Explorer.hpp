@@ -25,7 +25,8 @@ void addMapListItem(){
 		}
 
     	swprintf ( msg, 128, L"%hs_%d", Objects[i].getModel()->getName(),itemCounter); // Копирует строку в msg
-		itemCounter++;
+
+		// itemCounter++;
 	}
 
 	MapList->addItem(msg);
@@ -34,17 +35,7 @@ void addMapListItem(){
 //Создание подокна отображеия на сцене Scene Explorer
 void addSceneExplorerTree(IGUITab* t1){
     MapList = env->addListBox ( rect<s32>( 0, 0, EXPLORER_WINDOW_WIDTH , PROPERTIES_WINDOW_POS_H), t1, -1, true  );
-	MapList->setToolTipText ( L"Show the current Scenegraph" );
-	addMapListItem();
-	itemCounter = 1;
-
-	// IGUIImageList* imageList = device->getGUIEnvironment()->createImageList(device->getVideoDriver()->getTexture ( "../media/iconlist.png" ), dimension2di( 32, 32 ), true );
-
-    // if ( imageList ){
-    //     // SceneTree->setImageList( imageList );
-    //     imageList->drop ();
-    // }
-
+	MapList->setToolTipText ( L"Show the current Model" );
 }
 
 // Структура для работы с функцией scaner
