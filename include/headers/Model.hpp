@@ -143,6 +143,15 @@ void Model::updatePosInfo()
         toolboxWnd->getElementFromId(GUI_ID_X_POS, true)->setText( L"-" );
         toolboxWnd->getElementFromId(GUI_ID_Y_POS, true)->setText( L"-" );
         toolboxWnd->getElementFromId(GUI_ID_Z_POS, true)->setText( L"-" );
+
+        toolboxWnd->getElementFromId(GUI_ID_X_ROT, true)->setText( L"-" );
+        toolboxWnd->getElementFromId(GUI_ID_Y_ROT, true)->setText( L"-" );
+        toolboxWnd->getElementFromId(GUI_ID_Z_ROT, true)->setText( L"-" );
+
+        toolboxWnd->getElementFromId(GUI_ID_X_SCALE, true)->setText( L"-" );
+        toolboxWnd->getElementFromId(GUI_ID_Y_SCALE, true)->setText( L"-" );
+        toolboxWnd->getElementFromId(GUI_ID_Z_SCALE, true)->setText( L"-" );
+		
     }
     else
     {
@@ -150,6 +159,29 @@ void Model::updatePosInfo()
         toolboxWnd->getElementFromId(GUI_ID_X_POS, true)->setText( core::stringw(_position.X).c_str() );
         toolboxWnd->getElementFromId(GUI_ID_Y_POS, true)->setText( core::stringw(_position.Y).c_str() );
         toolboxWnd->getElementFromId(GUI_ID_Z_POS, true)->setText( core::stringw(_position.Z).c_str() );
+
+        core::vector3df _rotation = _Model->getRotation();
+        toolboxWnd->getElementFromId(GUI_ID_X_ROT, true)->setText( core::stringw(_rotation.X).c_str() );
+        toolboxWnd->getElementFromId(GUI_ID_Y_ROT, true)->setText( core::stringw(_rotation.Y).c_str() );
+        toolboxWnd->getElementFromId(GUI_ID_Z_ROT, true)->setText( core::stringw(_rotation.Z).c_str() );
+
+        core::vector3df _scale = _Model->getScale();
+        toolboxWnd->getElementFromId(GUI_ID_X_SCALE, true)->setText( core::stringw(_scale.X).c_str() );
+        toolboxWnd->getElementFromId(GUI_ID_Y_SCALE, true)->setText( core::stringw(_scale.Y).c_str() );
+        toolboxWnd->getElementFromId(GUI_ID_Z_SCALE, true)->setText( core::stringw(_scale.Z).c_str());
+		
+		//Передвигает скрулбар согласно координатам
+		scrollbarPosX->setPos(_position.X);
+		scrollbarPosY->setPos(_position.Y);
+		scrollbarPosZ->setPos(_position.Z);
+
+		scrollbarRotX->setPos(_rotation.X);
+		scrollbarRotY->setPos(_rotation.Y);
+		scrollbarRotZ->setPos(_rotation.Z);
+
+		scrollbarScaleX->setPos(_scale.X);
+		scrollbarScaleY->setPos(_scale.Y);
+		scrollbarScaleZ->setPos(_scale.Z);		
     }
 }
 

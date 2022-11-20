@@ -104,8 +104,9 @@ class MyEventReceiver : public IEventReceiver{
 				
 				// Выбирает объект при нажатии
 				if ( event.GUIEvent.Caller == MapList && event.GUIEvent.EventType == gui::EGET_LISTBOX_SELECTED_AGAIN ){
-                s32 selected = MapList->getSelected();
-				CurrentObject = Objects[selected];
+					s32 selected = MapList->getSelected();
+					CurrentObject = Objects[selected];
+					CurrentObject.updatePosInfo();
 				}
 
 				switch(event.GUIEvent.EventType){
@@ -218,8 +219,8 @@ class MyEventReceiver : public IEventReceiver{
 							
 							case GUI_ID_SAVE_BUTTON:{
 								if (false == smgr->saveScene("../save/SaveProject.irr", 0, 0)){
-									cout << "Error. Can't save" << endl;}
-									
+								cout << "Error. Can't save" << endl;}	
+
 								return true;
 								break;
 							}
@@ -294,8 +295,8 @@ class MyEventReceiver : public IEventReceiver{
 							Model* tmp = new Model; 
 							tmp->LoadModel(core::stringc(dialog->getFileName()).c_str());
 							Objects.push_back(*tmp);
-							itemCounter++;
 							addMapListItem();
+							itemCounter++;
 
 						}
 						

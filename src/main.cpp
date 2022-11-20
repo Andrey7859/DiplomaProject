@@ -50,9 +50,9 @@ int main(int argc,char **argv){
 
 	for (s32 i=0; i<irr::gui::EGDC_COUNT ; ++i)
     {
-        video::SColor col = skin->getColor((EGUI_DEFAULT_COLOR)i);
+        video::SColor col = skin->getColor((EGDC_3D_DARK_SHADOW));
         col.setAlpha(255);
-        skin->setColor((EGUI_DEFAULT_COLOR)i, col);
+        skin->setColor((EGDC_3D_DARK_SHADOW), col);
     }
 
 	// Создаем объект receiver на основе класса MyEventReceiver.

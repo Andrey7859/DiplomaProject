@@ -36,6 +36,18 @@ IGUITreeView* SceneTree;
 IGUIEnvironment* env;
 ICameraSceneNode *camera[4]={0,0,0,0};
 
+IGUIScrollBar* scrollbarPosX;
+IGUIScrollBar* scrollbarPosY;
+IGUIScrollBar* scrollbarPosZ;
+
+IGUIScrollBar* scrollbarRotX;
+IGUIScrollBar* scrollbarRotY;
+IGUIScrollBar* scrollbarRotZ;
+
+IGUIScrollBar* scrollbarScaleX;
+IGUIScrollBar* scrollbarScaleY;
+IGUIScrollBar* scrollbarScaleZ;
+
 // Определяем значения, которые мы будем использовать для идентификации отдельных элементов управления GUI.
 enum 
 {

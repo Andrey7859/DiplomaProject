@@ -11,10 +11,6 @@ IGUIEditBox* editboxScaleX;
 IGUIEditBox* editboxScaleY;
 IGUIEditBox* editboxScaleZ;
 
-IGUIScrollBar* scrollbarPosX;
-IGUIScrollBar* scrollbarPosY;
-IGUIScrollBar* scrollbarPosZ;
-
 // Функция созданя Toolset -> Properties
 void createToolset(){
     IGUIEnvironment* env = device->getGUIEnvironment();
@@ -60,17 +56,17 @@ void createToolset(){
 	env->addStaticText(L"Z:", core::rect<s32>(10,222,18,240), false, false, wnd);
     editboxRotZ = env->addEditBox(L"1.0", rect<s32>(25 , 220, 85, 240), true, wnd, GUI_ID_Z_ROT);
 
-	IGUIScrollBar* scrollbarRotX = env->addScrollBar(true,core::rect<s32>(100 , 160, 280, 180), wnd, GUI_ID_X_SCROLL_ROT);
+	scrollbarRotX = env->addScrollBar(true,core::rect<s32>(100 , 160, 280, 180), wnd, GUI_ID_X_SCROLL_ROT);
 	scrollbarRotX->setMin(-360);
 	scrollbarRotX->setMax(360);
 	scrollbarRotX->setPos(0);
 
-	IGUIScrollBar* scrollbarRotY = env->addScrollBar(true,core::rect<s32>(100 , 190, 280, 210), wnd, GUI_ID_Y_SCROLL_ROT);
+	scrollbarRotY = env->addScrollBar(true,core::rect<s32>(100 , 190, 280, 210), wnd, GUI_ID_Y_SCROLL_ROT);
 	scrollbarRotY->setMin(-360);
 	scrollbarRotY->setMax(360);
 	scrollbarRotY->setPos(0);
 
-	IGUIScrollBar* scrollbarRotZ = env->addScrollBar(true,core::rect<s32>(100 , 220, 280, 240), wnd, GUI_ID_Z_SCROLL_ROT);
+	scrollbarRotZ = env->addScrollBar(true,core::rect<s32>(100 , 220, 280, 240), wnd, GUI_ID_Z_SCROLL_ROT);
 	scrollbarRotZ->setMin(-360);
 	scrollbarRotZ->setMax(360);
 	scrollbarRotZ->setPos(0);
@@ -84,21 +80,21 @@ void createToolset(){
 	env->addStaticText(L"Z:", core::rect<s32>(10,332,18,350), false, false, wnd);
     editboxScaleZ = env->addEditBox(L"1.0", rect<s32>(25 , 330, 85, 350), true, wnd, GUI_ID_Z_SCALE);
 
-    IGUIScrollBar* scrollbarScaleX = env->addScrollBar(true,core::rect<s32>(100 , 270, 280, 290), wnd, GUI_ID_X_SCROLL_SCALE);
+    scrollbarScaleX = env->addScrollBar(true,core::rect<s32>(100 , 270, 280, 290), wnd, GUI_ID_X_SCROLL_SCALE);
 	scrollbarScaleX->setMin(-10);
 	scrollbarScaleX->setMax(10);
 	scrollbarScaleX->setPos(0);
 	scrollbarScaleX->setLargeStep(1);
 	scrollbarScaleX->setSmallStep(1);
 
-	IGUIScrollBar* scrollbarScaleY = env->addScrollBar(true,core::rect<s32>(100 , 300, 280, 320), wnd, GUI_ID_Y_SCROLL_SCALE);
+	scrollbarScaleY = env->addScrollBar(true,core::rect<s32>(100 , 300, 280, 320), wnd, GUI_ID_Y_SCROLL_SCALE);
 	scrollbarScaleY->setMin(-10);
 	scrollbarScaleY->setMax(10);
 	scrollbarScaleY->setPos(0);
 	scrollbarScaleY->setLargeStep(1);
 	scrollbarScaleY->setSmallStep(1);
 
-	IGUIScrollBar* scrollbarScaleZ = env->addScrollBar(true,core::rect<s32>(100 , 330, 280, 350), wnd, GUI_ID_Z_SCROLL_SCALE);
+	scrollbarScaleZ = env->addScrollBar(true,core::rect<s32>(100 , 330, 280, 350), wnd, GUI_ID_Z_SCROLL_SCALE);
 	scrollbarScaleZ->setMin(-10);
 	scrollbarScaleZ->setMax(10);
 	scrollbarScaleZ->setPos(0);
