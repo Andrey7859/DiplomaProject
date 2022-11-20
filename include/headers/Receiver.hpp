@@ -44,6 +44,8 @@ void OnMenuItemSelected( IGUIContextMenu* menu ){
 
 	// Блок меню Edit
 	case GUI_ID_BRUSH: // Удалить модель 
+		env->addFileOpenDialog(L"Please choose scene.", true, 0, 2, true);
+
 	break;
 
 	// Подблок меню View 1
@@ -231,6 +233,11 @@ class MyEventReceiver : public IEventReceiver{
 								return true;
 								break;
 							}
+							case GUI_ID_BRUSH_BUTTON: // Удалить модель 
+								env->addFileOpenDialog(L"Please choose texture.", true, 0, 2, true);
+								
+								return true;
+								break;
 
 							case GUI_ID_PERSPECTIVE_BUTTON:{
 								currentViewState = GUI_ID_PERSPECTIVE_BUTTON;
@@ -297,7 +304,8 @@ class MyEventReceiver : public IEventReceiver{
 							Objects.push_back(*tmp);
 							addMapListItem();
 							itemCounter++;
-
+							CurrentObject = Objects[Objects.size()-1]; // выбор последнего объекта
+							MapList->setSelected(MapList->getChildren().getSize()); // выделяет объект
 						}
 						
 						if (id == 1){
@@ -318,10 +326,21 @@ class MyEventReceiver : public IEventReceiver{
 									addMapListItem();
 								}
 							}
+							CurrentObject = Objects[Objects.size()-1]; // выбор последнего объекта
+							MapList->setSelected(MapList->getChildren().getSize()); // выделяет объект
 						}
-
-						CurrentObject = Objects[Objects.size()-1]; // выбор последнего объекта
-						MapList->setSelected(MapList->getChildren().getSize()); // выделяет объект
+						
+						//Загрузка текстура
+						if (id == 2){
+							video::ITexture * texture = device->getVideoDriver()->getTexture( core::stringc(dialog->getFileName()).c_str() );
+							if (texture && CurrentObject.getModel()){ // Модель = объемная фигура
+								// Перезагружает текстуру
+								device->getVideoDriver()->removeTexture(texture);
+								texture = device->getVideoDriver()->getTexture( core::stringc(dialog->getFileName()).c_str() );
+								// Устанавливаем новую текстуру
+								CurrentObject.getModel()->setMaterialTexture(0, texture);
+							}						
+						}
 					}
 					break;
 
