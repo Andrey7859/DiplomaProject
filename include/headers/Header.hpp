@@ -35,6 +35,8 @@ ISceneManager* smgr;
 IGUITreeView* SceneTree;
 IGUIEnvironment* env;
 ICameraSceneNode *camera[4]={0,0,0,0};
+core::stringw MessageText;
+
 
 IGUIScrollBar* scrollbarPosX;
 IGUIScrollBar* scrollbarPosY;
@@ -83,11 +85,10 @@ enum
 	// Buttons (Кнопки)
 	GUI_ID_ADD_BUTTON,
 	GUI_ID_LOAD_BUTTON,
+	GUI_ID_LOAD_TEXTURE_BUTTON,
 	GUI_ID_SAVE_BUTTON,
 	GUI_ID_DELETE_BUTTON,
 	
-	GUI_ID_BRUSH_BUTTON,
-
 	GUI_ID_PERSPECTIVE_BUTTON,
 	GUI_ID_TOP_BUTTON,
 	GUI_ID_FRONT_BUTTON,
@@ -100,23 +101,21 @@ enum
 	// Topbar (Верхнее меню)
 	GUI_ID_OPEN_MODEL,
 	GUI_ID_LOAD_SCENE,
+	GUI_ID_LOAD_TEXTURE,
 	GUI_ID_SAVE_MODEL,
 	GUI_ID_DELETE_MODEL,
 	GUI_ID_QUIT,
 
-	GUI_ID_BRUSH,
-	
-	GUI_ID_VIEW,
 	GUI_ID_CAMERA,
+	GUI_ID_BBOX,
+	GUI_ID_WAREFRANE,
 
+	GUI_ID_VIEW,
 	GUI_ID_PERSPECTIVE,
 	GUI_ID_TOP,
 	GUI_ID_LEFT,
 	GUI_ID_FRONT,
 	GUI_ID_SPLIT,
-
-	GUI_ID_BBOX,
-	GUI_ID_WAREFRANE,
 
 	GUI_ID_ABOUT
 	

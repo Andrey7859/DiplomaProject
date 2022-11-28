@@ -14,6 +14,7 @@ void createMenu(){
 	submenu = menu->getSubMenu(0);
 	submenu->addItem(L"Open Model File", GUI_ID_OPEN_MODEL);
 	submenu->addItem(L"Open Scene File", GUI_ID_LOAD_SCENE);
+	submenu->addItem(L"Open Texture", GUI_ID_LOAD_TEXTURE);
 	submenu->addSeparator();
 	submenu->addItem(L"Save", GUI_ID_SAVE_MODEL);
 	submenu->addItem(L"Delete", GUI_ID_DELETE_MODEL);
@@ -22,12 +23,15 @@ void createMenu(){
 
 	// Вкладка редактровать (Edit)
 	submenu = menu->getSubMenu(1);
-	submenu->addItem(L"Brush", GUI_ID_BRUSH);
+	submenu->addItem(L"Camera", GUI_ID_CAMERA, true, true);
+	//Подвкладка вид 1(Edit)
+		submenu = menu->getSubMenu(1)->getSubMenu(0);
+		submenu->addItem(L"Bounding box", GUI_ID_BBOX);
+		submenu->addItem(L"Wareframe", GUI_ID_WAREFRANE);
 
 	// Вкладка вид (View)
 	submenu = menu->getSubMenu(2);
-	submenu->addItem(L"Camera", GUI_ID_VIEW, true, true);
-	submenu->addItem(L"View", GUI_ID_CAMERA, true, true);
+	submenu->addItem(L"View", GUI_ID_VIEW, true, true);
 		//Подвкладка вид 1(View)
 		submenu = menu->getSubMenu(2)->getSubMenu(0);
 		submenu->addItem(L"Perspective", GUI_ID_PERSPECTIVE);
@@ -35,10 +39,6 @@ void createMenu(){
 		submenu->addItem(L"Left", GUI_ID_LEFT);
 		submenu->addItem(L"Front", GUI_ID_FRONT);
 		submenu->addItem(L"Split", GUI_ID_SPLIT);
-		//Подвкладка вид 2(View)
-		submenu = menu->getSubMenu(2)->getSubMenu(1);
-		submenu->addItem(L"Bounding box", GUI_ID_BBOX);
-		submenu->addItem(L"Wareframe", GUI_ID_WAREFRANE);
 		
 	// Вкладка о прииложении (About)
 	submenu = menu->getSubMenu(3);
@@ -57,43 +57,43 @@ void createButtonsField(){
     IGUIWindow* wnd = env->addWindow(rect<s32>(0, OFFSET, Width, BUTTON_SIZE + (OFFSET * 2)), false, L"Q", 0, GUI_ID_DIALOG_ROOT_2_WINDOW);
 	wnd->setDrawTitlebar(false);
 
-	// Создание кнопок 1 Блок (Добавить, сохранить, загрузить, удалить)
+	// Создание кнопок 1 Блок (Загрузить модель, загрузить модель, загрузить текстуру, сохранить, , удалить)
 	IGUIButton* addButton = env->addButton(rect<s32>(OFFSET, OFFSET / 2 , BUTTON_SIZE + OFFSET, BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_ADD_BUTTON, L" ",L"Add model");
 	addButton->setImage(driver->getTexture("../media/icon/add.jpg"));
 	
 	IGUIButton* loadButton = env->addButton(rect<s32>((OFFSET * 2) + BUTTON_SIZE, OFFSET / 2, (BUTTON_SIZE + OFFSET) * 2, BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_LOAD_BUTTON, L" ", L"Load scene");
 	loadButton->setImage(driver->getTexture("../media/icon/loadScene.jpg"));
 	
-	IGUIButton* saveButton = env->addButton(rect<s32>((OFFSET * 3) + (BUTTON_SIZE * 2), OFFSET / 2, (BUTTON_SIZE + OFFSET) * 3, BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_SAVE_BUTTON, L" ", L"Save scene");
+	IGUIButton* brushButton = env->addButton(rect<s32>((OFFSET * 3) + (BUTTON_SIZE * 2), OFFSET / 2, (BUTTON_SIZE + OFFSET) * 3, BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_LOAD_TEXTURE_BUTTON, L" ", L"Select object");
+	brushButton->setImage(driver->getTexture("../media/icon/loadTexture.jpg"));
+
+	IGUIButton* saveButton = env->addButton(rect<s32>((OFFSET * 4) + (BUTTON_SIZE * 3), OFFSET / 2, (BUTTON_SIZE + OFFSET) * 4, BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_SAVE_BUTTON, L" ", L"Save scene");
 	saveButton->setImage(driver->getTexture("../media/icon/save.jpg"));
 
-	IGUIButton* deleteButton = env->addButton(rect<s32>((OFFSET * 4) + (BUTTON_SIZE * 3), OFFSET / 2, (BUTTON_SIZE + OFFSET) * 4, BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_DELETE_BUTTON, L" ", L"Delete model");
+	IGUIButton* deleteButton = env->addButton(rect<s32>((OFFSET * 5) + (BUTTON_SIZE * 4), OFFSET / 2, (BUTTON_SIZE * 5) + (OFFSET * 5), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_DELETE_BUTTON, L" ", L"Delete model");
 	deleteButton->setImage(driver->getTexture("../media/icon/delete.jpg"));
 
-	// Создание кнопок 2 Блок (Кисть)
-	IGUIButton* brushButton = env->addButton(rect<s32>((OFFSET * 6) + (BUTTON_SIZE * 4), OFFSET / 2, (BUTTON_SIZE * 5) + (OFFSET * 6), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_BRUSH_BUTTON, L" ", L"Select object");
-	brushButton->setImage(driver->getTexture("../media/icon/select.jpg"));
 	
 	//Создание кнопок 3 Блок (Перспектива, топ, фронт, лефт, сплит)
-	IGUIButton* perspectiveButton = env->addButton(rect<s32>((OFFSET * 8) + (BUTTON_SIZE * 5), OFFSET / 2, (BUTTON_SIZE * 6) + (OFFSET * 8), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_PERSPECTIVE_BUTTON, L" ", L"Perspective view");
+	IGUIButton* perspectiveButton = env->addButton(rect<s32>((OFFSET * 7) + (BUTTON_SIZE * 5), OFFSET / 2, (BUTTON_SIZE * 6) + (OFFSET * 7), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_PERSPECTIVE_BUTTON, L" ", L"Perspective view");
 	perspectiveButton->setImage(driver->getTexture("../media/icon/perspective.jpg"));
 
-	IGUIButton* topButton = env->addButton(rect<s32>((OFFSET * 9) + (BUTTON_SIZE * 6), OFFSET / 2, (BUTTON_SIZE * 7) + (OFFSET * 9), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_TOP_BUTTON, L" ", L"Top view");
+	IGUIButton* topButton = env->addButton(rect<s32>((OFFSET * 8) + (BUTTON_SIZE * 6), OFFSET / 2, (BUTTON_SIZE * 7) + (OFFSET * 8), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_TOP_BUTTON, L" ", L"Top view");
 	topButton->setImage(driver->getTexture("../media/icon/top.jpg"));
 
-	IGUIButton* frontButton = env->addButton(rect<s32>((OFFSET * 10) + (BUTTON_SIZE * 7), OFFSET / 2, (BUTTON_SIZE * 8) + (OFFSET * 10), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_FRONT_BUTTON, L" ", L"Front view");
+	IGUIButton* frontButton = env->addButton(rect<s32>((OFFSET * 9) + (BUTTON_SIZE * 7), OFFSET / 2, (BUTTON_SIZE * 8) + (OFFSET * 9), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_FRONT_BUTTON, L" ", L"Front view");
 	frontButton->setImage(driver->getTexture("../media/icon/front.jpg"));
 	
-	IGUIButton* leftButton = env->addButton(rect<s32>((OFFSET * 11) + (BUTTON_SIZE * 8), OFFSET / 2, (BUTTON_SIZE * 9) + (OFFSET * 11), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_LEFT_BUTTON, L" ", L"Left view");
+	IGUIButton* leftButton = env->addButton(rect<s32>((OFFSET * 10) + (BUTTON_SIZE * 8), OFFSET / 2, (BUTTON_SIZE * 9) + (OFFSET * 10), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_LEFT_BUTTON, L" ", L"Left view");
 	leftButton->setImage(driver->getTexture("../media/icon/left.jpg"));
 
-	IGUIButton* splitButton = env->addButton(rect<s32>((OFFSET * 12) + (BUTTON_SIZE * 9), OFFSET / 2, (BUTTON_SIZE * 10) + (OFFSET * 12), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_SPLIT_BUTTON, L" ", L"Split view");
+	IGUIButton* splitButton = env->addButton(rect<s32>((OFFSET * 11) + (BUTTON_SIZE * 9), OFFSET / 2, (BUTTON_SIZE * 10) + (OFFSET * 11), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_SPLIT_BUTTON, L" ", L"Split view");
 	splitButton->setImage(driver->getTexture("../media/icon/split.png"));
 
 	// //Создание кнопок 4 Блок (bbox, wireFrame)
-	IGUIButton* bboxButton = env->addButton(rect<s32>((OFFSET * 14) + (BUTTON_SIZE * 10), OFFSET / 2, (BUTTON_SIZE * 11) + (OFFSET * 14), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_BBOX_BUTTON, L" ", L"Bounding Box");
+	IGUIButton* bboxButton = env->addButton(rect<s32>((OFFSET * 13) + (BUTTON_SIZE * 10), OFFSET / 2, (BUTTON_SIZE * 11) + (OFFSET * 13), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_BBOX_BUTTON, L" ", L"Bounding Box");
 	bboxButton->setImage(driver->getTexture("../media/icon/bbox.png"));
 
-	IGUIButton* wireFrameButton = env->addButton(rect<s32>((OFFSET * 15) + (BUTTON_SIZE * 11), OFFSET / 2, (BUTTON_SIZE * 12) + (OFFSET * 15), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_WIREFRAME_BUTTON, L" ", L"Wire Frame");
+	IGUIButton* wireFrameButton = env->addButton(rect<s32>((OFFSET * 14) + (BUTTON_SIZE * 11), OFFSET / 2, (BUTTON_SIZE * 12) + (OFFSET * 14), BUTTON_SIZE + (OFFSET / 2)), wnd, GUI_ID_WIREFRAME_BUTTON, L" ", L"Wire Frame");
 	wireFrameButton->setImage(driver->getTexture("../media/icon/wireFrame.jpg"));
 }

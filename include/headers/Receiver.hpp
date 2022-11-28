@@ -14,6 +14,15 @@ inline void deleteModel(){
 	MapList->setSelected(0);
 }
 
+//Окно About
+	
+void showAboutText(){
+	IGUIWindow* window = env->addWindow(rect<s32>(300, 300, 900, 700), true, L" About");
+
+	env->addStaticText(L"Welcome to the Mesh Viewer of the  Irrlicht Engine.\nThis program is able to load and display all 3D geometry and models the Irrlicht Engine can.\nControls: Left mouse to rotate, right mouse to move, both buttons to zoom. Escape to Stop FPS Camera \n\nSupported formats are: \n- Irrlicht scene and mesh formats (.irr, .irrmesh, .xml) \n- 3D Studio (.3ds) \n- Blitz3D (.b3d) \n- COLLADA 1.2/1.3 (.dae, .xml) \n- Cartography shop 4 (.csm) \n- DirectX (.x) \n- DeleD (.dmf) \n- Maya (.obj) \n- Milkshape (.ms3d) \n- My3D (.my3D) \n- OCT (.oct) \n- Ogre3d (.mesh) \n- Pulsar LMTools (.lmts) \n- Quake 3 levels (.bsp) \n- Quake 2 models (.md2) \n- Stanford Triangle (.ply) \n- Stereolithography format (.stl)" ,rect<s32>(35,35, 865, 665), true, false, window);
+	}
+
+
 //Обработчик событий нажатий на пункты меню
 void OnMenuItemSelected( IGUIContextMenu* menu ){
 	s32 id = menu->getItemCommandId(menu->getSelectedItem());
@@ -27,6 +36,11 @@ void OnMenuItemSelected( IGUIContextMenu* menu ){
 	case GUI_ID_LOAD_SCENE: // Загрузить сцену
 		env->addFileOpenDialog(L"Please choose scene.", true, 0, 1, true);
 	
+	break;
+
+	case GUI_ID_LOAD_TEXTURE: // Удалить модель 
+		env->addFileOpenDialog(L"Please choose scene.", true, 0, 2, true);
+
 	break;
 
 	case GUI_ID_SAVE_MODEL: // Сохранение
@@ -43,10 +57,7 @@ void OnMenuItemSelected( IGUIContextMenu* menu ){
 	break;
 
 	// Блок меню Edit
-	case GUI_ID_BRUSH: // Удалить модель 
-		env->addFileOpenDialog(L"Please choose scene.", true, 0, 2, true);
-
-	break;
+	
 
 	// Подблок меню View 1
 	case GUI_ID_PERSPECTIVE: // Вид перспективы
@@ -73,6 +84,7 @@ void OnMenuItemSelected( IGUIContextMenu* menu ){
 	break;
 
 	case GUI_ID_ABOUT: // О программе
+		showAboutText();
 	break;
 	}
 }
@@ -218,6 +230,13 @@ class MyEventReceiver : public IEventReceiver{
 								return true;
 								break;
 							}
+
+							case GUI_ID_LOAD_TEXTURE_BUTTON:{
+								env->addFileOpenDialog(L"Please choose texture.", true, 0, 2, true);
+								
+								return true;
+								break;
+							}
 							
 							case GUI_ID_SAVE_BUTTON:{
 								if (false == smgr->saveScene("../save/SaveProject.irr", 0, 0)){
@@ -233,11 +252,6 @@ class MyEventReceiver : public IEventReceiver{
 								return true;
 								break;
 							}
-							case GUI_ID_BRUSH_BUTTON: // Удалить модель 
-								env->addFileOpenDialog(L"Please choose texture.", true, 0, 2, true);
-								
-								return true;
-								break;
 
 							case GUI_ID_PERSPECTIVE_BUTTON:{
 								currentViewState = GUI_ID_PERSPECTIVE_BUTTON;

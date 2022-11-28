@@ -48,12 +48,17 @@ int main(int argc,char **argv){
 	createExplorer();
 	MapList->setSelected(0); // Выделяет модель при запуске
 
-	for (s32 i=0; i<irr::gui::EGDC_COUNT ; ++i)
-    {
-        video::SColor col = skin->getColor((EGDC_3D_DARK_SHADOW));
-        col.setAlpha(255);
-        skin->setColor((EGDC_3D_DARK_SHADOW), col);
-    }
+    // driver->setTextureCreationFlag(video::ETCF_CREATE_MIP_MAPS, false);
+	driver->setTextureCreationFlag(video::ETCF_CREATE_MIP_MAPS, true);
+	scene::ISceneNode* skybox=smgr->addSkyBoxSceneNode(
+        driver->getTexture("../media/irrlicht2_up.jpg"),
+        driver->getTexture("../media/irrlicht2_dn.jpg"),
+        driver->getTexture("../media/irrlicht2_lf.jpg"),
+        driver->getTexture("../media/irrlicht2_rt.jpg"),
+        driver->getTexture("../media/irrlicht2_ft.jpg"),
+        driver->getTexture("../media/irrlicht2_bk.jpg"));
+    driver->setTextureCreationFlag(video::ETCF_CREATE_MIP_MAPS, true);
+
 
 	// Создаем объект receiver на основе класса MyEventReceiver.
 					//Накопитель
