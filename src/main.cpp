@@ -57,7 +57,9 @@ int main(int argc,char **argv){
         driver->getTexture("../media/irrlicht2_rt.jpg"),
         driver->getTexture("../media/irrlicht2_ft.jpg"),
         driver->getTexture("../media/irrlicht2_bk.jpg"));
-    driver->setTextureCreationFlag(video::ETCF_CREATE_MIP_MAPS, true);
+
+	skybox->setVisible(true);
+    // driver->setTextureCreationFlag(video::ETCF_CREATE_MIP_MAPS, true);
 
 
 	// Создаем объект receiver на основе класса MyEventReceiver.
